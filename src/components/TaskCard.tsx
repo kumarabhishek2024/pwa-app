@@ -3,8 +3,6 @@ import {
   Rocket,
   CalendarDays,
   MoreVertical,
-} from "lucide-react";
-import {
   Check,
   Circle,
 } from "lucide-react";
@@ -21,7 +19,8 @@ const TaskCard = ({
   onToggle,
 }: TaskCardProps) => {
 
-  const isCompleted = task.status === "completed";
+  const isCompleted =
+    task.status === "completed";
 
   return (
     <div
@@ -58,28 +57,22 @@ const TaskCard = ({
         {/* Content */}
         <div className="min-w-0 flex-1">
 
-          {/* Title + More */}
+          {/* Title */}
           <div className="flex items-start justify-between gap-3">
 
             <div className="min-w-0">
 
-              <h3
-                className={`truncate text-lg font-extrabold tracking-tight ${
-                  isCompleted
-                    ? "text-slate-700"
-                    : "text-slate-900"
-                }`}
-              >
+              <h3 className="truncate text-lg font-extrabold tracking-tight text-slate-900">
                 {task.title}
               </h3>
 
-              <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-slate-500">
+              <p className="mt-1.5 text-sm leading-6 text-slate-500">
                 {task.description}
               </p>
 
             </div>
 
-            {/* More Icon */}
+            {/* More */}
             <button
               type="button"
               aria-label="More options"
@@ -109,29 +102,34 @@ const TaskCard = ({
 
             {/* Status */}
             <button
-  type="button"
-  onClick={() => onToggle(task.id)}
-  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
-    isCompleted
-      ? "bg-green-100 text-green-700 hover:bg-green-200"
-      : "bg-red-100 text-red-700 hover:bg-red-200"
-  }`}
->
-  {isCompleted ? (
-    <>
-      <Check size={14} strokeWidth={3} />
-      Completed
-    </>
-  ) : (
-    <>
-      <Circle
-        size={10}
-        fill="currentColor"
-      />
-      Pending
-    </>
-  )}
-</button>
+              type="button"
+              onClick={() => onToggle(task.id)}
+              className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
+                isCompleted
+                  ? "bg-green-100 text-green-700 hover:bg-green-200"
+                  : "bg-red-100 text-red-700 hover:bg-red-200"
+              }`}
+            >
+
+              {isCompleted ? (
+                <>
+                  <Check
+                    size={14}
+                    strokeWidth={3}
+                  />
+                  Completed
+                </>
+              ) : (
+                <>
+                  <Circle
+                    size={10}
+                    fill="currentColor"
+                  />
+                  Pending
+                </>
+              )}
+
+            </button>
 
           </div>
 

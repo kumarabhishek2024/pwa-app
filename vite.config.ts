@@ -19,7 +19,6 @@ export default defineConfig({
         start_url: "/",
         display: "standalone",
 
-        // Blue theme
         theme_color: "#2563EB",
         background_color: "#F8FAFC",
 
@@ -36,7 +35,7 @@ export default defineConfig({
           },
         ],
       },
-}),
+    }),
   ],
 
   preview: {

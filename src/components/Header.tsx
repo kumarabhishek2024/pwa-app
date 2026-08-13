@@ -1,6 +1,4 @@
-import {
-  Menu,
-} from "lucide-react";
+import { Menu } from "lucide-react";
 
 const Header = () => {
   return (
@@ -32,7 +30,7 @@ const Header = () => {
       </div>
 
       {/* Profile */}
-      <div className="h-11 w-11 overflow-hidden rounded-full border-2 border-blue-100 bg-blue-50 shadow-sm transition hover:scale-105">
+      <div className="h-11 w-11 overflow-hidden rounded-full border-2 border-blue-100 bg-blue-50 shadow-sm">
 
         <img
           src="/profile.jpg"

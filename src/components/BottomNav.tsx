@@ -28,39 +28,27 @@ const BottomNav = () => {
           {/* Home */}
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-xl bg-blue-50 px-4 py-3 text-left font-semibold text-blue-600 shadow-sm transition-all duration-200"
+            className="flex w-full items-center gap-3 rounded-xl bg-blue-50 px-4 py-3 text-left font-semibold text-blue-600 shadow-sm"
           >
-            <Home
-              size={20}
-              strokeWidth={2.2}
-            />
-
+            <Home size={20} />
             Home
           </button>
 
           {/* Tasks */}
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 hover:text-blue-600"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-medium text-slate-600 transition hover:bg-slate-50 hover:text-blue-600"
           >
-            <ListTodo
-              size={20}
-              strokeWidth={2.2}
-            />
-
+            <ListTodo size={20} />
             Tasks
           </button>
 
           {/* Profile */}
           <button
             type="button"
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 hover:text-blue-600"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-medium text-slate-600 transition hover:bg-slate-50 hover:text-blue-600"
           >
-            <User
-              size={20}
-              strokeWidth={2.2}
-            />
-
+            <User size={20} />
             Profile
           </button>
 
@@ -78,10 +66,7 @@ const BottomNav = () => {
             type="button"
             className="flex flex-col items-center gap-1 font-semibold text-blue-600"
           >
-            <Home
-              size={22}
-              strokeWidth={2.2}
-            />
+            <Home size={22} />
 
             <span className="text-xs">
               Home
@@ -93,10 +78,7 @@ const BottomNav = () => {
             type="button"
             className="flex flex-col items-center gap-1 text-slate-500 transition hover:text-blue-600"
           >
-            <ListTodo
-              size={22}
-              strokeWidth={2.2}
-            />
+            <ListTodo size={22} />
 
             <span className="text-xs">
               Tasks
@@ -108,10 +90,7 @@ const BottomNav = () => {
             type="button"
             className="flex flex-col items-center gap-1 text-slate-500 transition hover:text-blue-600"
           >
-            <User
-              size={22}
-              strokeWidth={2.2}
-            />
+            <User size={22} />
 
             <span className="text-xs">
               Profile
