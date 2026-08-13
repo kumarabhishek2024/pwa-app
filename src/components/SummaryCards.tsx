@@ -15,17 +15,20 @@ const SummaryCards = ({
   pending,
   completed,
 }: SummaryCardsProps) => {
+
   return (
     <section className="grid grid-cols-3 gap-3 px-5 lg:gap-6 lg:px-10">
 
-      {/* Total Tasks */}
+      {/* Total */}
       <div className="group rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md lg:p-6">
 
         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 transition-transform duration-200 group-hover:scale-110">
+
           <ListTodo
             size={21}
             className="text-blue-600"
           />
+
         </div>
 
         <h3 className="text-2xl font-extrabold tracking-tight text-blue-600">
@@ -42,10 +45,12 @@ const SummaryCards = ({
       <div className="group rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md lg:p-6">
 
         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 transition-transform duration-200 group-hover:scale-110">
+
           <Clock3
             size={21}
             className="text-red-600"
           />
+
         </div>
 
         <h3 className="text-2xl font-extrabold tracking-tight text-red-600">
@@ -62,10 +67,12 @@ const SummaryCards = ({
       <div className="group rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md lg:p-6">
 
         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 transition-transform duration-200 group-hover:scale-110">
+
           <CircleCheck
             size={21}
             className="text-green-600"
           />
+
         </div>
 
         <h3 className="text-2xl font-extrabold tracking-tight text-green-600">

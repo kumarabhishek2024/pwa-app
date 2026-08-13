@@ -1,4 +1,14 @@
-import { BookOpen, Rocket, CalendarDays } from "lucide-react";
+import {
+  BookOpen,
+  Rocket,
+  CalendarDays,
+  MoreVertical,
+} from "lucide-react";
+import {
+  Check,
+  Circle,
+} from "lucide-react";
+
 import type { Task } from "../types/task";
 
 interface TaskCardProps {
@@ -6,7 +16,11 @@ interface TaskCardProps {
   onToggle: (id: number) => void;
 }
 
-const TaskCard = ({ task, onToggle }: TaskCardProps) => {
+const TaskCard = ({
+  task,
+  onToggle,
+}: TaskCardProps) => {
+
   const isCompleted = task.status === "completed";
 
   return (
@@ -17,6 +31,7 @@ const TaskCard = ({ task, onToggle }: TaskCardProps) => {
           : "border-l-4 border-l-red-500"
       }`}
     >
+
       <div className="flex gap-4">
 
         {/* Task Icon */}
@@ -28,16 +43,22 @@ const TaskCard = ({ task, onToggle }: TaskCardProps) => {
           }`}
         >
           {isCompleted ? (
-            <Rocket size={26} strokeWidth={2.2} />
+            <Rocket
+              size={26}
+              strokeWidth={2.2}
+            />
           ) : (
-            <BookOpen size={26} strokeWidth={2.2} />
+            <BookOpen
+              size={26}
+              strokeWidth={2.2}
+            />
           )}
         </div>
 
-        {/* Task Content */}
+        {/* Content */}
         <div className="min-w-0 flex-1">
 
-          {/* Title + Menu */}
+          {/* Title + More */}
           <div className="flex items-start justify-between gap-3">
 
             <div className="min-w-0">
@@ -58,13 +79,13 @@ const TaskCard = ({ task, onToggle }: TaskCardProps) => {
 
             </div>
 
-            {/* More Button */}
+            {/* More Icon */}
             <button
               type="button"
               aria-label="More options"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xl font-bold text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
             >
-              ⋮
+              <MoreVertical size={20} />
             </button>
 
           </div>
@@ -74,30 +95,50 @@ const TaskCard = ({ task, onToggle }: TaskCardProps) => {
 
             {/* Date */}
             <div className="flex items-center gap-1.5 text-sm font-medium text-slate-500">
+
               <CalendarDays
                 size={16}
                 className="text-slate-400"
               />
-              <span>{task.date}</span>
+
+              <span>
+                {task.date}
+              </span>
+
             </div>
 
             {/* Status */}
             <button
-              type="button"
-              onClick={() => onToggle(task.id)}
-              className={`rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
-                isCompleted
-                  ? "bg-green-100 text-green-700 hover:bg-green-200"
-                  : "bg-red-100 text-red-700 hover:bg-red-200"
-              }`}
-            >
-              {isCompleted ? "✓ Completed" : "● Pending"}
-            </button>
+  type="button"
+  onClick={() => onToggle(task.id)}
+  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
+    isCompleted
+      ? "bg-green-100 text-green-700 hover:bg-green-200"
+      : "bg-red-100 text-red-700 hover:bg-red-200"
+  }`}
+>
+  {isCompleted ? (
+    <>
+      <Check size={14} strokeWidth={3} />
+      Completed
+    </>
+  ) : (
+    <>
+      <Circle
+        size={10}
+        fill="currentColor"
+      />
+      Pending
+    </>
+  )}
+</button>
 
           </div>
 
         </div>
+
       </div>
+
     </div>
   );
 };

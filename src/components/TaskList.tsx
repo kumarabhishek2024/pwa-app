@@ -6,9 +6,13 @@ interface TaskListProps {
   onToggle: (id: number) => void;
 }
 
-const TaskList = ({ tasks, onToggle }: TaskListProps) => {
+const TaskList = ({
+  tasks,
+  onToggle,
+}: TaskListProps) => {
   return (
     <div className="grid grid-cols-1 gap-5 px-5 sm:grid-cols-2 lg:grid-cols-2 lg:gap-6 lg:px-10">
+
       {tasks.map((task) => (
         <TaskCard
           key={task.id}
@@ -16,6 +20,7 @@ const TaskList = ({ tasks, onToggle }: TaskListProps) => {
           onToggle={onToggle}
         />
       ))}
+
     </div>
   );
 };

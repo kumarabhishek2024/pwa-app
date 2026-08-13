@@ -1,3 +1,7 @@
+import {
+  Menu,
+} from "lucide-react";
+
 const Header = () => {
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-4 shadow-sm backdrop-blur-md lg:px-10">
@@ -5,13 +9,18 @@ const Header = () => {
       {/* Mobile Menu */}
       <button
         type="button"
-        className="flex h-10 w-10 items-center justify-center rounded-xl text-2xl text-slate-700 transition hover:bg-slate-100 lg:hidden"
+        aria-label="Open menu"
+        className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100 lg:hidden"
       >
-        ☰
+        <Menu
+          size={22}
+          strokeWidth={2.2}
+        />
       </button>
 
       {/* Title */}
       <div>
+
         <h1 className="text-xl font-extrabold tracking-tight text-slate-900 lg:text-2xl">
           My Tasks
         </h1>
@@ -19,6 +28,7 @@ const Header = () => {
         <p className="mt-0.5 hidden text-sm font-medium text-slate-500 lg:block">
           Manage your daily tasks
         </p>
+
       </div>
 
       {/* Profile */}

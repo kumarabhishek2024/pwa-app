@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Trophy } from "lucide-react";
+import { Plus, Trophy } from "lucide-react";
+
 import Header from "./components/Header";
 import SummaryCards from "./components/SummaryCards";
 import TaskList from "./components/TaskList";
@@ -17,7 +18,6 @@ const defaultTasks: Task[] = [
     status: "pending",
     date: "12 Aug 2026",
   },
-
   {
     id: 2,
     title: "Learn PWA",
@@ -26,7 +26,6 @@ const defaultTasks: Task[] = [
     status: "pending",
     date: "14 Aug 2026",
   },
-
   {
     id: 3,
     title: "Create React Project",
@@ -38,10 +37,7 @@ const defaultTasks: Task[] = [
 ];
 
 function App() {
-
-  // Tasks state
   const [tasks, setTasks] = useState<Task[]>(() => {
-
     const savedTasks = localStorage.getItem("tasks");
 
     if (savedTasks) {
@@ -51,46 +47,33 @@ function App() {
     return defaultTasks;
   });
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] =
-    useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Save tasks to localStorage
   useEffect(() => {
-    localStorage.setItem(
-      "tasks",
-      JSON.stringify(tasks)
-    );
+    localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  // Add new task
   const addTask = (newTask: Task) => {
-
     setTasks((previousTasks) => [
       ...previousTasks,
       newTask,
     ]);
   };
 
-  // Completed tasks
   const completedTasks = tasks.filter(
     (task) => task.status === "completed"
   ).length;
 
-  // Pending tasks
   const pendingTasks = tasks.filter(
     (task) => task.status === "pending"
   ).length;
 
-  // Change task status
   const toggleTask = (id: number) => {
-
     setTasks((previousTasks) =>
       previousTasks.map((task) =>
         task.id === id
           ? {
               ...task,
-
               status:
                 task.status === "completed"
                   ? "pending"
@@ -102,21 +85,20 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F8FC]">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
 
       <main className="min-h-screen pb-24 lg:ml-64 lg:pb-0">
 
-        {/* Header */}
         <Header />
 
         {/* Greeting */}
-        <section className="px-5 pb-6 pt-2 lg:px-10 lg:pb-8 lg:pt-8">
+        <section className="px-5 pb-6 pt-6 lg:px-10 lg:pb-8 lg:pt-10">
 
-          <h2 className="text-2xl font-bold text-slate-900 lg:text-3xl">
-            Good Morning, buddy 
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            Good Morning, buddy
           </h2>
 
-          <p className="mt-2 text-base text-slate-500">
+          <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-base">
             Let's make today productive.
           </p>
 
@@ -129,44 +111,39 @@ function App() {
           completed={completedTasks}
         />
 
-        {/* Task Section */}
+        {/* Tasks */}
         <section className="mt-8 lg:mt-10">
 
-          {/* Task Heading + Add Button */}
           <div className="mb-5 flex items-center justify-between px-5 lg:px-10">
 
             <div>
-
-              <h2 className="text-2xl font-bold text-slate-900 lg:text-3xl">
+              <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
                 Your Tasks
               </h2>
 
-              <p className="mt-1 hidden text-sm text-slate-500 lg:block">
+              <p className="mt-1 text-sm leading-6 text-slate-500">
                 Keep track of your daily activities
               </p>
-
             </div>
 
-            {/* Add Task Button */}
+            {/* Add Task */}
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
-              className="rounded-xl bg-purple-600 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-purple-700"
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-md shadow-blue-200 transition-all duration-200 hover:bg-blue-700 hover:shadow-lg active:scale-95"
             >
+              <Plus
+                size={18}
+                strokeWidth={2.5}
+              />
 
               <span className="hidden sm:inline">
-                + Add Task
+                Add Task
               </span>
-
-              <span className="sm:hidden">
-                +
-              </span>
-
             </button>
 
           </div>
 
-          {/* Task List */}
           <TaskList
             tasks={tasks}
             onToggle={toggleTask}
@@ -175,18 +152,21 @@ function App() {
         </section>
 
         {/* Progress */}
-        <section className="mx-5 mt-8 rounded-2xl bg-purple-50 p-5 lg:mx-10 lg:mt-10 lg:p-7">
+        <section className="mx-5 mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-5 shadow-sm lg:mx-10 lg:mt-10 lg:p-7">
 
           <div className="flex items-center gap-4">
 
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-purple-100">
-  <Trophy size={26} className="text-purple-600" />
-</div>
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-100">
+              <Trophy
+                size={26}
+                className="text-blue-600"
+                strokeWidth={2.2}
+              />
+            </div>
 
             <div>
-
-              <h3 className="text-lg font-bold text-purple-700 lg:text-xl">
-                Great Progress! 
+              <h3 className="text-lg font-extrabold text-blue-700 lg:text-xl">
+                Great Progress!
               </h3>
 
               <p className="mt-1 text-sm text-slate-600">
@@ -194,16 +174,15 @@ function App() {
               </p>
 
               <p className="mt-1 text-sm text-slate-600">
-                Keep going! 
+                Keep going!
               </p>
-
             </div>
 
           </div>
 
         </section>
 
-        {/* Add Task Modal */}
+        {/* Modal */}
         {isModalOpen && (
           <AddTaskModal
             onClose={() => setIsModalOpen(false)}
@@ -211,7 +190,6 @@ function App() {
           />
         )}
 
-        {/* Navigation */}
         <BottomNav />
 
       </main>
