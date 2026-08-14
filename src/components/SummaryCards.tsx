@@ -10,83 +10,111 @@ interface SummaryCardsProps {
   completed: number;
 }
 
-const SummaryCards = ({
+function SummaryCards({
   total,
   pending,
   completed,
-}: SummaryCardsProps) => {
+}: SummaryCardsProps) {
+  const cards = [
+    {
+      title: "Total Tasks",
+      count: total,
+      icon: ListTodo,
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
+      countColor: "text-blue-600",
+    },
+    {
+      title: "Pending",
+      count: pending,
+      icon: Clock3,
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-600",
+      countColor: "text-orange-600",
+    },
+    {
+      title: "Completed",
+      count: completed,
+      icon: CircleCheck,
+      iconBg: "bg-green-100",
+      iconColor: "text-green-600",
+      countColor: "text-green-600",
+    },
+  ];
 
   return (
-    <section className="grid grid-cols-3 gap-3 px-5 lg:gap-6 lg:px-10">
+    <section className="grid grid-cols-3 gap-3 px-5 lg:gap-5 lg:px-10">
+      {cards.map((card) => {
+        const Icon = card.icon;
 
-      {/* Total */}
-      <div className="group rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md lg:p-6">
+        return (
+          <div
+            key={card.title}
+            className="
+              group
+              rounded-2xl
+              border
+              border-slate-200
+              bg-white
+              p-4
+              shadow-sm
+              transition-all
+              duration-200
+              hover:-translate-y-1
+              hover:shadow-md
+              sm:p-5
+              lg:rounded-3xl
+              lg:p-6
+            "
+          >
+            {/* ICON */}
+            <div className="flex justify-center">
+              <div
+                className={`
+                  flex
+                  h-10
+                  w-10
+                  items-center
+                  justify-center
+                  rounded-xl
+                  ${card.iconBg}
+                  ${card.iconColor}
+                  transition-transform
+                  duration-200
+                  group-hover:scale-110
+                  sm:h-11
+                  sm:w-11
+                `}
+              >
+                <Icon size={21} strokeWidth={2.2} />
+              </div>
+            </div>
 
-        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100">
+            {/* COUNT */}
+            <div className="mt-3 flex justify-center">
+              <span
+                className={`
+                  text-3xl
+                  font-extrabold
+                  tracking-tight
+                  ${card.countColor}
+                  sm:text-4xl
+                  lg:text-5xl
+                `}
+              >
+                {card.count}
+              </span>
+            </div>
 
-          <ListTodo
-            size={21}
-            className="text-blue-600"
-          />
-
-        </div>
-
-        <h3 className="text-2xl font-extrabold text-blue-600">
-          {total}
-        </h3>
-
-        <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
-          Total Tasks
-        </p>
-
-      </div>
-
-      {/* Pending */}
-      <div className="group rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md lg:p-6">
-
-        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-red-100">
-
-          <Clock3
-            size={21}
-            className="text-red-600"
-          />
-
-        </div>
-
-        <h3 className="text-2xl font-extrabold text-red-600">
-          {pending}
-        </h3>
-
-        <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
-          Pending
-        </p>
-
-      </div>
-
-      {/* Completed */}
-      <div className="group rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-md lg:p-6">
-
-        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-green-100">
-
-          <CircleCheck
-            size={21}
-            className="text-green-600"
-          />
-
-        </div>
-
-        <h3 className="text-2xl font-extrabold text-green-600">
-          {completed}
-        </h3>
-
-        <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
-          Completed
-        </p>
-
-      </div>
-
+            {/* TITLE */}
+           <p className="mt-2 text-center text-sm font-bold text-slate-600 sm:text-base lg:text-lg">
+  {card.title}
+</p>
+          </div>
+        );
+      })}
     </section>
   );
-};
+}
 
 export default SummaryCards;
