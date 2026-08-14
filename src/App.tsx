@@ -18,7 +18,6 @@ const defaultTasks: Task[] = [
     status: "pending",
     date: "12 Aug 2026",
   },
-
   {
     id: 2,
     title: "Learn PWA",
@@ -27,7 +26,6 @@ const defaultTasks: Task[] = [
     status: "pending",
     date: "14 Aug 2026",
   },
-
   {
     id: 3,
     title: "Create React Project",
@@ -43,20 +41,27 @@ function App() {
   // DYNAMIC GREETING
   // ------------------------------------
 
-  // ------------------------------------
-// DYNAMIC GREETING
-// ------------------------------------
+  const [currentHour, setCurrentHour] = useState(
+    new Date().getHours()
+  );
 
-const currentHour = new Date().getHours();
+  useEffect(() => {
+    // Update greeting every 1 minute
+    const timer = setInterval(() => {
+      setCurrentHour(new Date().getHours());
+    }, 60000);
 
-const greeting =
-  currentHour < 12
-    ? "Good Morning"
-    : currentHour < 16
-      ? "Good Afternoon"
-      : currentHour < 20
-        ? "Good Evening"
-        : "Good Night";
+    return () => clearInterval(timer);
+  }, []);
+
+  const greeting =
+    currentHour < 12
+      ? "Good Morning"
+      : currentHour < 16
+        ? "Good Afternoon"
+        : currentHour < 20
+          ? "Good Evening"
+          : "Good Night";
 
   // ------------------------------------
   // TASKS STATE
@@ -80,18 +85,14 @@ const greeting =
   // MODAL STATE
   // ------------------------------------
 
-  const [isModalOpen, setIsModalOpen] =
-    useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // ------------------------------------
   // SAVE TASKS TO LOCAL STORAGE
   // ------------------------------------
 
   useEffect(() => {
-    localStorage.setItem(
-      "tasks",
-      JSON.stringify(tasks)
-    );
+    localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
   // ------------------------------------
@@ -103,9 +104,7 @@ const greeting =
       const highestId =
         previousTasks.length > 0
           ? Math.max(
-              ...previousTasks.map(
-                (task) => task.id
-              )
+              ...previousTasks.map((task) => task.id)
             )
           : 0;
 
@@ -119,6 +118,9 @@ const greeting =
         },
       ];
     });
+
+    // Close modal after adding task
+    setIsModalOpen(false);
   };
 
   // ------------------------------------
@@ -156,6 +158,10 @@ const greeting =
       )
     );
   };
+
+  // ------------------------------------
+  // UI
+  // ------------------------------------
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -204,9 +210,7 @@ const greeting =
             {/* Add Task Button */}
             <button
               type="button"
-              onClick={() =>
-                setIsModalOpen(true)
-              }
+              onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-md shadow-blue-200 transition hover:bg-blue-700 active:scale-95"
             >
               <Plus size={18} />
@@ -264,14 +268,12 @@ const greeting =
         {/* Add Task Modal */}
         {isModalOpen && (
           <AddTaskModal
-            onClose={() =>
-              setIsModalOpen(false)
-            }
+            onClose={() => setIsModalOpen(false)}
             onAddTask={addTask}
           />
         )}
 
-        {/* Navigation */}
+        {/* Bottom Navigation */}
         <BottomNav />
 
       </main>
