@@ -1,168 +1,412 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X, Plus } from "lucide-react";
+import { X, Save, Plus } from "lucide-react";
 
 import type { Task } from "../types/task";
 
-// ------------------------------------
+// ============================================
 // ZOD VALIDATION SCHEMA
-// ------------------------------------
+// ============================================
 
 const taskSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(1, "Title is required")
-    .min(3, "Title must be at least 3 characters")
-    .max(30, "Title must not exceed 30 characters"),
+    .min(1, "Task title is required")
+    .min(3, "Task title must be at least 3 characters")
+    .max(
+      100,
+      "Task title must not exceed 100 characters"
+    ),
 
   description: z
     .string()
     .trim()
     .min(1, "Description is required")
-    .min(8, "Description must be at least 8 characters")
-    .max(200, "Description must not exceed 200 characters"),
+    .min(
+      5,
+      "Description must be at least 5 characters"
+    )
+    .max(
+      300,
+      "Description must not exceed 300 characters"
+    ),
 
   date: z
     .string()
     .min(1, "Date is required"),
+
+  status: z.enum([
+    "pending",
+    "completed",
+  ]),
+
+  priority: z.enum([
+    "low",
+    "medium",
+    "high",
+  ]),
 });
 
-// Form data type
-type TaskFormData = z.infer<typeof taskSchema>;
+type TaskFormData = z.infer<
+  typeof taskSchema
+>;
 
-// ------------------------------------
+// ============================================
 // PROPS
-// ------------------------------------
+// ============================================
 
 interface AddTaskModalProps {
   onClose: () => void;
-  onAddTask: (task: Task) => void;
+
+  onAddTask: (
+    task: Omit<Task, "id">
+  ) => void;
+
+  onUpdateTask: (
+    task: Task
+  ) => void;
+
+  editingTask: Task | null;
 }
 
-// ------------------------------------
-// COMPONENT
-// ------------------------------------
+// ============================================
+// DATE FORMATTER
+// ============================================
 
-const AddTaskModal = ({
+const formatDateForInput = (
+  date: string
+): string => {
+  if (!date) {
+    return "";
+  }
+
+  // Already YYYY-MM-DD
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(date)
+  ) {
+    return date;
+  }
+
+  // Old format like:
+  // 12 Aug 2026
+  const parsedDate = new Date(date);
+
+  if (
+    !Number.isNaN(
+      parsedDate.getTime()
+    )
+  ) {
+    const year =
+      parsedDate.getFullYear();
+
+    const month = String(
+      parsedDate.getMonth() + 1
+    ).padStart(2, "0");
+
+    const day = String(
+      parsedDate.getDate()
+    ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
+  return "";
+};
+
+// ============================================
+// COMPONENT
+// ============================================
+
+function AddTaskModal({
   onClose,
   onAddTask,
-}: AddTaskModalProps) => {
+  onUpdateTask,
+  editingTask,
+}: AddTaskModalProps) {
 
-  // React Hook Form
+  const isEditMode =
+    editingTask !== null;
+
+  // ==========================================
+  // REACT HOOK FORM
+  // ==========================================
+
   const {
     register,
     handleSubmit,
     reset,
     formState: {
       errors,
-      isSubmitting,
     },
   } = useForm<TaskFormData>({
-    resolver: zodResolver(taskSchema),
+    resolver:
+      zodResolver(taskSchema),
 
     defaultValues: {
       title: "",
       description: "",
       date: "",
+      status: "pending",
+      priority: "medium",
     },
 
     mode: "onBlur",
   });
 
-  // ------------------------------------
+  // ==========================================
+  // LOAD EDITING TASK
+  // ==========================================
+
+  useEffect(() => {
+
+    if (editingTask) {
+
+      reset({
+        title:
+          editingTask.title,
+
+        description:
+          editingTask.description,
+
+        date:
+          formatDateForInput(
+            editingTask.date
+          ),
+
+        status:
+          editingTask.status,
+
+        priority:
+          editingTask.priority ??
+          "medium",
+      });
+
+    } else {
+
+      reset({
+        title: "",
+        description: "",
+        date: "",
+        status: "pending",
+        priority: "medium",
+      });
+
+    }
+
+  }, [
+    editingTask,
+    reset,
+  ]);
+
+  // ==========================================
   // SUBMIT
-  // ------------------------------------
+  // ==========================================
 
-  const onSubmit = (data: TaskFormData) => {
+  const onSubmit = (
+    data: TaskFormData
+  ) => {
 
-    const newTask: Task = {
-      // ID App.tsx me generate hoga
-      id: 0,
+    // ----------------------------------------
+    // UPDATE EXISTING TASK
+    // ----------------------------------------
 
-      title: data.title.trim(),
+    if (editingTask) {
 
-      description: data.description.trim(),
+      const updatedTask: Task = {
+        ...editingTask,
 
-      status: "pending",
+        title:
+          data.title.trim(),
 
-      date: data.date,
+        description:
+          data.description.trim(),
+
+        // Always save YYYY-MM-DD
+        date:
+          data.date,
+
+        status:
+          data.status,
+
+        priority:
+          data.priority,
+      };
+
+      onUpdateTask(
+        updatedTask
+      );
+
+      return;
+    }
+
+    // ----------------------------------------
+    // ADD NEW TASK
+    // ----------------------------------------
+
+    const newTask: Omit<
+      Task,
+      "id"
+    > = {
+
+      title:
+        data.title.trim(),
+
+      description:
+        data.description.trim(),
+
+      // Always save YYYY-MM-DD
+      date:
+        data.date,
+
+      status:
+        data.status,
+
+      priority:
+        data.priority,
     };
 
-    onAddTask(newTask);
-
-    reset();
-
-    onClose();
+    onAddTask(
+      newTask
+    );
   };
 
-  // ------------------------------------
-  // CLOSE MODAL
-  // ------------------------------------
-
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/50 px-4 backdrop-blur-sm">
+    <div
+      className="
+        fixed
+        inset-0
+        z-50
+        flex
+        items-center
+        justify-center
+        bg-black/50
+        px-4
+      "
+      onClick={onClose}
+    >
 
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <div
+        className="
+          max-h-[95vh]
+          w-full
+          max-w-md
+          overflow-y-auto
+          rounded-2xl
+          bg-white
+          shadow-xl
+        "
+        onClick={(event) =>
+          event.stopPropagation()
+        }
+      >
 
-        {/* --------------------------------
-            HEADER
-        -------------------------------- */}
+        {/* ================================= */}
+        {/* HEADER */}
+        {/* ================================= */}
 
-        <div className="mb-6 flex items-center justify-between">
+        <div
+          className="
+            flex
+            items-center
+            justify-between
+            border-b
+            border-slate-100
+            px-6
+            py-5
+          "
+        >
 
           <div>
 
-            <h2 className="text-xl font-extrabold text-slate-900">
-              Add New Task
+            <h2
+              className="
+                text-2xl
+                font-extrabold
+                text-slate-900
+              "
+            >
+              {isEditMode
+                ? "Edit Task"
+                : "Add New Task"}
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Create a new task.
+            <p
+              className="
+                mt-1
+                text-sm
+                text-slate-500
+              "
+            >
+              {isEditMode
+                ? "Update your task details."
+                : "Create a new task."}
             </p>
 
           </div>
 
           <button
             type="button"
-            onClick={handleClose}
+            onClick={onClose}
             aria-label="Close modal"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            className="
+              flex
+              h-9
+              w-9
+              items-center
+              justify-center
+              rounded-lg
+              text-slate-400
+              transition
+              hover:bg-slate-100
+              hover:text-slate-700
+            "
           >
             <X size={20} />
           </button>
 
         </div>
 
-        {/* --------------------------------
-            FORM
-        -------------------------------- */}
+        {/* ================================= */}
+        {/* FORM */}
+        {/* ================================= */}
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(
+            onSubmit
+          )}
           noValidate
-          className="space-y-4"
+          className="
+            space-y-5
+            p-6
+          "
         >
 
-          {/* =================================
-              TITLE
-          ================================= */}
+          {/* ================================= */}
+          {/* TITLE */}
+          {/* ================================= */}
 
           <div>
 
             <label
               htmlFor="title"
-              className="mb-1.5 block text-sm font-semibold text-slate-700"
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+              "
             >
               Task Title
-              <span className="ml-1 text-red-500">
-                *
+              <span className="text-red-500">
+                {" "}*
               </span>
             </label>
 
@@ -171,70 +415,139 @@ const AddTaskModal = ({
               type="text"
               placeholder="Enter task title"
               {...register("title")}
-              className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
-                errors.title
-                  ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-100"
-                  : "border-slate-200 focus:border-blue-500 focus:ring-blue-100"
-              }`}
+              className={`
+                w-full
+                rounded-xl
+                border
+                px-4
+                py-3
+                text-sm
+                outline-none
+                transition
+                focus:ring-2
+                ${
+                  errors.title
+                    ? `
+                      border-red-400
+                      focus:border-red-500
+                      focus:ring-red-100
+                    `
+                    : `
+                      border-slate-200
+                      focus:border-blue-500
+                      focus:ring-blue-100
+                    `
+                }
+              `}
             />
 
             {errors.title && (
-              <p className="mt-1.5 text-xs font-medium text-red-500">
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  text-red-500
+                "
+              >
                 {errors.title.message}
               </p>
             )}
 
           </div>
 
-          {/* =================================
-              DESCRIPTION
-          ================================= */}
+          {/* ================================= */}
+          {/* DESCRIPTION */}
+          {/* ================================= */}
 
           <div>
 
             <label
               htmlFor="description"
-              className="mb-1.5 block text-sm font-semibold text-slate-700"
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+              "
             >
               Description
-              <span className="ml-1 text-red-500">
-                *
+              <span className="text-red-500">
+                {" "}*
               </span>
             </label>
 
             <textarea
               id="description"
-              rows={3}
+              rows={4}
               placeholder="Enter task description"
-              {...register("description")}
-              className={`w-full resize-none rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
-                errors.description
-                  ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-100"
-                  : "border-slate-200 focus:border-blue-500 focus:ring-blue-100"
-              }`}
+              {...register(
+                "description"
+              )}
+              className={`
+                w-full
+                resize-none
+                rounded-xl
+                border
+                px-4
+                py-3
+                text-sm
+                outline-none
+                transition
+                focus:ring-2
+                ${
+                  errors.description
+                    ? `
+                      border-red-400
+                      focus:border-red-500
+                      focus:ring-red-100
+                    `
+                    : `
+                      border-slate-200
+                      focus:border-blue-500
+                      focus:ring-blue-100
+                    `
+                }
+              `}
             />
 
             {errors.description && (
-              <p className="mt-1.5 text-xs font-medium text-red-500">
-                {errors.description.message}
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  text-red-500
+                "
+              >
+                {
+                  errors
+                    .description
+                    .message
+                }
               </p>
             )}
 
           </div>
 
-          {/* =================================
-              DATE
-          ================================= */}
+          {/* ================================= */}
+          {/* DATE */}
+          {/* ================================= */}
 
           <div>
 
             <label
               htmlFor="date"
-              className="mb-1.5 block text-sm font-semibold text-slate-700"
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+              "
             >
               Date
-              <span className="ml-1 text-red-500">
-                *
+              <span className="text-red-500">
+                {" "}*
               </span>
             </label>
 
@@ -242,48 +555,262 @@ const AddTaskModal = ({
               id="date"
               type="date"
               {...register("date")}
-              className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-2 ${
-                errors.date
-                  ? "border-red-400 bg-red-50/30 focus:border-red-500 focus:ring-red-100"
-                  : "border-slate-200 focus:border-blue-500 focus:ring-blue-100"
-              }`}
+              className={`
+                w-full
+                rounded-xl
+                border
+                px-4
+                py-3
+                text-sm
+                outline-none
+                transition
+                focus:ring-2
+                ${
+                  errors.date
+                    ? `
+                      border-red-400
+                      focus:border-red-500
+                      focus:ring-red-100
+                    `
+                    : `
+                      border-slate-200
+                      focus:border-blue-500
+                      focus:ring-blue-100
+                    `
+                }
+              `}
             />
 
             {errors.date && (
-              <p className="mt-1.5 text-xs font-medium text-red-500">
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  text-red-500
+                "
+              >
                 {errors.date.message}
               </p>
             )}
 
           </div>
 
-          {/* =================================
-              BUTTONS
-          ================================= */}
+          {/* ================================= */}
+          {/* STATUS */}
+          {/* ================================= */}
 
-          <div className="flex gap-3 pt-3">
+          <div>
 
-            {/* Cancel */}
+            <label
+              htmlFor="status"
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+              "
+            >
+              Status
+              <span className="text-red-500">
+                {" "}*
+              </span>
+            </label>
+
+            <select
+              id="status"
+              {...register("status")}
+              className="
+                w-full
+                rounded-xl
+                border
+                border-slate-200
+                bg-white
+                px-4
+                py-3
+                text-sm
+                outline-none
+                transition
+                focus:border-blue-500
+                focus:ring-2
+                focus:ring-blue-100
+              "
+            >
+
+              <option value="pending">
+                Pending
+              </option>
+
+              <option value="completed">
+                Completed
+              </option>
+
+            </select>
+
+            {errors.status && (
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  text-red-500
+                "
+              >
+                {errors.status.message}
+              </p>
+            )}
+
+          </div>
+
+          {/* ================================= */}
+          {/* PRIORITY */}
+          {/* ================================= */}
+
+          <div>
+
+            <label
+              htmlFor="priority"
+              className="
+                mb-2
+                block
+                text-sm
+                font-semibold
+                text-slate-700
+              "
+            >
+              Priority
+              <span className="text-red-500">
+                {" "}*
+              </span>
+            </label>
+
+            <select
+              id="priority"
+              {...register("priority")}
+              className={`
+                w-full
+                rounded-xl
+                border
+                bg-white
+                px-4
+                py-3
+                text-sm
+                outline-none
+                transition
+                focus:ring-2
+                ${
+                  errors.priority
+                    ? `
+                      border-red-400
+                      focus:border-red-500
+                      focus:ring-red-100
+                    `
+                    : `
+                      border-slate-200
+                      focus:border-blue-500
+                      focus:ring-blue-100
+                    `
+                }
+              `}
+            >
+
+              <option value="low">
+                Low
+              </option>
+
+              <option value="medium">
+                Medium
+              </option>
+
+              <option value="high">
+                High
+              </option>
+
+            </select>
+
+            {errors.priority && (
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  text-red-500
+                "
+              >
+                {
+                  errors
+                    .priority
+                    .message
+                }
+              </p>
+            )}
+
+          </div>
+
+          {/* ================================= */}
+          {/* BUTTONS */}
+          {/* ================================= */}
+
+          <div
+            className="
+              flex
+              gap-3
+              pt-2
+            "
+          >
+
             <button
               type="button"
-              onClick={handleClose}
-              className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+              onClick={onClose}
+              className="
+                flex-1
+                rounded-xl
+                border
+                border-slate-200
+                px-4
+                py-3
+                text-sm
+                font-bold
+                text-slate-700
+                transition
+                hover:bg-slate-50
+              "
             >
               Cancel
             </button>
 
-            {/* Submit */}
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+              className="
+                flex
+                flex-1
+                items-center
+                justify-center
+                gap-2
+                rounded-xl
+                bg-blue-600
+                px-4
+                py-3
+                text-sm
+                font-bold
+                text-white
+                shadow-md
+                shadow-blue-200
+                transition
+                hover:bg-blue-700
+                active:scale-95
+              "
             >
 
-              <Plus size={17} />
-
-              {isSubmitting
-                ? "Adding..."
-                : "Add Task"}
+              {isEditMode ? (
+                <>
+                  <Save size={17} />
+                  Update Task
+                </>
+              ) : (
+                <>
+                  <Plus size={17} />
+                  Add Task
+                </>
+              )}
 
             </button>
 
@@ -295,6 +822,6 @@ const AddTaskModal = ({
 
     </div>
   );
-};
+}
 
 export default AddTaskModal;
