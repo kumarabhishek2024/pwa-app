@@ -43,14 +43,20 @@ function App() {
   // DYNAMIC GREETING
   // ------------------------------------
 
-  const currentHour = new Date().getHours();
+  // ------------------------------------
+// DYNAMIC GREETING
+// ------------------------------------
 
-  const greeting =
-    currentHour < 12
-      ? "Good Morning"
-      : currentHour < 16
-        ? "Good Afternoon"
-        : "Good Evening";
+const currentHour = new Date().getHours();
+
+const greeting =
+  currentHour < 12
+    ? "Good Morning"
+    : currentHour < 16
+      ? "Good Afternoon"
+      : currentHour < 20
+        ? "Good Evening"
+        : "Good Night";
 
   // ------------------------------------
   // TASKS STATE
