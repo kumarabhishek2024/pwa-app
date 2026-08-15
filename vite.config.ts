@@ -34,6 +34,25 @@ export default defineConfig({
             type: "image/png",
           },
         ],
+
+        // ==========================================
+        // PWA SCREENSHOTS
+        // ==========================================
+        screenshots: [
+          {
+            src: "/pwa-desktop.png",
+            sizes: "1440x900",
+            type: "image/png",
+            form_factor: "wide",
+            label: "My Tasks desktop application",
+          },
+          {
+            src: "/pwa-mobile.png",
+            sizes: "390x844",
+            type: "image/png",
+            label: "My Tasks mobile application",
+          },
+        ],
       },
     }),
   ],
