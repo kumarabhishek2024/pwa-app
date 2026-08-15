@@ -6,10 +6,12 @@ import {
 
 interface BottomNavProps {
   isModalOpen?: boolean;
+  onProfileClick?: () => void;
 }
 
 const BottomNav = ({
   isModalOpen = false,
+  onProfileClick,
 }: BottomNavProps) => {
 
   // Modal open hai to navigation hide rahega
@@ -120,6 +122,7 @@ const BottomNav = ({
           {/* Profile */}
           <button
             type="button"
+            onClick={onProfileClick}
             className="
               flex
               w-full
@@ -212,6 +215,7 @@ const BottomNav = ({
           {/* Profile */}
           <button
             type="button"
+            onClick={onProfileClick}
             className="
               flex
               flex-col

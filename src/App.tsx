@@ -6,6 +6,9 @@ import SummaryCards from "./components/SummaryCards";
 import TaskList from "./components/TaskList";
 import BottomNav from "./components/BottomNav";
 import AddTaskModal from "./components/AddTaskModal";
+import ProfileModal, {
+  type ProfileData,
+} from "./components/ProfileModal";
 
 import type { Task } from "./types/task";
 
@@ -44,6 +47,15 @@ const defaultTasks: Task[] = [
     priority: "low",
   },
 ];
+
+// ============================================
+// DEFAULT PROFILE
+// ============================================
+
+const defaultProfile: ProfileData = {
+  name: "Abhishek",
+  image: "",
+};
 
 // ============================================
 // FILTER TYPE
@@ -117,7 +129,40 @@ function App() {
   });
 
   // ==========================================
-  // MODAL STATE
+  // PROFILE STATE
+  // ==========================================
+
+  const [profile, setProfile] =
+    useState<ProfileData>(() => {
+      const savedProfile =
+        localStorage.getItem("profile");
+
+      if (!savedProfile) {
+        return defaultProfile;
+      }
+
+      try {
+        const parsedProfile =
+          JSON.parse(savedProfile);
+
+        return {
+          name:
+            typeof parsedProfile.name === "string"
+              ? parsedProfile.name
+              : defaultProfile.name,
+
+          image:
+            typeof parsedProfile.image === "string"
+              ? parsedProfile.image
+              : defaultProfile.image,
+        };
+      } catch {
+        return defaultProfile;
+      }
+    });
+
+  // ==========================================
+  // TASK MODAL STATE
   // ==========================================
 
   const [isModalOpen, setIsModalOpen] =
@@ -125,6 +170,20 @@ function App() {
 
   const [editingTask, setEditingTask] =
     useState<Task | null>(null);
+
+  // ==========================================
+  // PROFILE MODAL STATE
+  // ==========================================
+
+  const [isProfileModalOpen, setIsProfileModalOpen] =
+    useState(false);
+
+  // ==========================================
+  // PROFILE SAVED MESSAGE STATE
+  // ==========================================
+
+  const [showProfileSaved, setShowProfileSaved] =
+    useState(false);
 
   // ==========================================
   // SEARCH STATE
@@ -141,7 +200,7 @@ function App() {
     useState<FilterStatus>("all");
 
   // ==========================================
-  // SAVE TO LOCAL STORAGE
+  // SAVE TASKS TO LOCAL STORAGE
   // ==========================================
 
   useEffect(() => {
@@ -150,6 +209,17 @@ function App() {
       JSON.stringify(tasks)
     );
   }, [tasks]);
+
+  // ==========================================
+  // SAVE PROFILE TO LOCAL STORAGE
+  // ==========================================
+
+  useEffect(() => {
+    localStorage.setItem(
+      "profile",
+      JSON.stringify(profile)
+    );
+  }, [profile]);
 
   // ==========================================
   // ADD TASK
@@ -232,12 +302,50 @@ function App() {
   };
 
   // ==========================================
-  // CLOSE MODAL
+  // CLOSE TASK MODAL
   // ==========================================
 
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTask(null);
+  };
+
+  // ==========================================
+  // OPEN PROFILE MODAL
+  // ==========================================
+
+  const openProfileModal = () => {
+    setIsProfileModalOpen(true);
+  };
+
+  // ==========================================
+  // CLOSE PROFILE MODAL
+  // ==========================================
+
+  const closeProfileModal = () => {
+    setIsProfileModalOpen(false);
+  };
+
+  // ==========================================
+  // SAVE PROFILE
+  // ==========================================
+
+  const handleSaveProfile = (
+    updatedProfile: ProfileData
+  ) => {
+    // Update profile
+    setProfile(updatedProfile);
+
+    // Close profile modal
+    setIsProfileModalOpen(false);
+
+    // Show success message
+    setShowProfileSaved(true);
+
+    // Hide success message after 2.5 seconds
+    setTimeout(() => {
+      setShowProfileSaved(false);
+    }, 2500);
   };
 
   // ==========================================
@@ -319,7 +427,10 @@ function App() {
         {/* HEADER */}
         {/* ================================= */}
 
-        <Header />
+        <Header
+          profile={profile}
+          onProfileClick={openProfileModal}
+        />
 
         {/* ================================= */}
         {/* GREETING */}
@@ -328,7 +439,7 @@ function App() {
         <section className="px-5 pb-6 pt-6 lg:px-10 lg:pb-8 lg:pt-8">
 
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 lg:text-3xl">
-            {greeting}, buddy
+            {greeting}, {profile.name}
           </h2>
 
           <p className="mt-2 text-base text-slate-500">
@@ -548,7 +659,7 @@ function App() {
         </section>
 
         {/* ================================= */}
-        {/* ADD / EDIT MODAL */}
+        {/* ADD / EDIT TASK MODAL */}
         {/* ================================= */}
 
         {isModalOpen && (
@@ -561,10 +672,81 @@ function App() {
         )}
 
         {/* ================================= */}
+        {/* PROFILE MODAL */}
+        {/* ================================= */}
+
+        {isProfileModalOpen && (
+          <ProfileModal
+            profile={profile}
+            onClose={closeProfileModal}
+            onSave={handleSaveProfile}
+          />
+        )}
+
+        {/* ================================= */}
+        {/* PROFILE SAVED SUCCESS MESSAGE */}
+        {/* ================================= */}
+
+        {showProfileSaved && (
+          <div
+            className="
+              fixed
+              bottom-6
+              right-6
+              z-[10000]
+              flex
+              items-center
+              gap-3
+              rounded-xl
+              bg-green-600
+              px-5
+              py-3
+              text-sm
+              font-bold
+              text-white
+              shadow-xl
+              animate-in
+              fade-in
+              slide-in-from-bottom-3
+              duration-300
+            "
+          >
+
+            <span
+              className="
+                flex
+                h-6
+                w-6
+                items-center
+                justify-center
+                rounded-full
+                bg-white/20
+                text-sm
+              "
+            >
+              ✓
+            </span>
+
+            <span>
+              Profile saved successfully!
+            </span>
+
+          </div>
+        )}
+
+        {/* ================================= */}
         {/* BOTTOM NAVIGATION */}
         {/* ================================= */}
 
-        <BottomNav />
+        <BottomNav
+          isModalOpen={
+            isModalOpen ||
+            isProfileModalOpen
+          }
+          onProfileClick={
+            openProfileModal
+          }
+        />
 
       </main>
 
