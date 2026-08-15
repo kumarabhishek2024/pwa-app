@@ -7,7 +7,7 @@ import { X, Save, Plus } from "lucide-react";
 import type { Task } from "../types/task";
 
 // ============================================
-// ZOD VALIDATION SCHEMA
+// VALIDATION
 // ============================================
 
 const taskSchema = z.object({
@@ -16,14 +16,23 @@ const taskSchema = z.object({
     .trim()
     .min(1, "Task title is required")
     .min(3, "Task title must be at least 3 characters")
-    .max(100, "Task title must not exceed 100 characters"),
+    .max(
+      100,
+      "Task title must not exceed 100 characters"
+    ),
 
   description: z
     .string()
     .trim()
     .min(1, "Description is required")
-    .min(5, "Description must be at least 5 characters")
-    .max(300, "Description must not exceed 300 characters"),
+    .min(
+      5,
+      "Description must be at least 5 characters"
+    )
+    .max(
+      300,
+      "Description must not exceed 300 characters"
+    ),
 
   date: z
     .string()
@@ -41,7 +50,9 @@ const taskSchema = z.object({
   ]),
 });
 
-type TaskFormData = z.infer<typeof taskSchema>;
+type TaskFormData = z.infer<
+  typeof taskSchema
+>;
 
 // ============================================
 // PROPS
@@ -72,15 +83,12 @@ const formatDateForInput = (
     return "";
   }
 
-  // Already YYYY-MM-DD
   if (
     /^\d{4}-\d{2}-\d{2}$/.test(date)
   ) {
     return date;
   }
 
-  // Old format like:
-  // 12 Aug 2026
   const parsedDate = new Date(date);
 
   if (
@@ -120,7 +128,7 @@ function AddTaskModal({
     editingTask !== null;
 
   // ==========================================
-  // REACT HOOK FORM
+  // FORM
   // ==========================================
 
   const {
@@ -146,7 +154,7 @@ function AddTaskModal({
   });
 
   // ==========================================
-  // LOAD EDITING TASK
+  // EDIT DATA
   // ==========================================
 
   useEffect(() => {
@@ -198,7 +206,10 @@ function AddTaskModal({
     data: TaskFormData
   ) => {
 
-    // UPDATE EXISTING TASK
+    // ========================================
+    // UPDATE
+    // ========================================
+
     if (editingTask) {
 
       const updatedTask: Task = {
@@ -227,7 +238,10 @@ function AddTaskModal({
       return;
     }
 
-    // ADD NEW TASK
+    // ========================================
+    // ADD
+    // ========================================
+
     const newTask: Omit<
       Task,
       "id"
@@ -265,565 +279,591 @@ function AddTaskModal({
         inset-0
         z-[9999]
         flex
+        h-screen
         items-center
         justify-center
         overflow-hidden
-        bg-black/50
-        px-4
-        py-4
+        bg-white
+        lg:left-64
       "
-      onClick={onClose}
     >
 
       {/* ===================================== */}
-      {/* MODAL */}
+      {/* CENTER AREA */}
       {/* ===================================== */}
 
       <div
         className="
           w-full
-          max-w-md
-          max-h-[calc(100dvh-2rem)]
-          overflow-y-auto
-          overscroll-contain
-          rounded-2xl
-          bg-white
-          shadow-xl
+          px-4
+          sm:px-6
+          lg:px-10
         "
-        onClick={(event) =>
-          event.stopPropagation()
-        }
       >
 
-        {/* ================================= */}
-        {/* HEADER */}
-        {/* ================================= */}
+        {/* =================================== */}
+        {/* ADD TASK CARD */}
+        {/* =================================== */}
 
         <div
           className="
-            flex
-            items-center
-            justify-between
-            border-b
-            border-slate-100
-            px-6
-            py-5
-          "
-        >
-
-          <div>
-
-            <h2
-              className="
-                text-2xl
-                font-extrabold
-                text-slate-900
-              "
-            >
-              {isEditMode
-                ? "Edit Task"
-                : "Add New Task"}
-            </h2>
-
-            <p
-              className="
-                mt-1
-                text-sm
-                text-slate-500
-              "
-            >
-              {isEditMode
-                ? "Update your task details."
-                : "Create a new task."}
-            </p>
-
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close task modal"
-            className="
-              flex
-              h-9
-              w-9
-              shrink-0
-              items-center
-              justify-center
-              rounded-lg
-              text-slate-400
-              transition
-              hover:bg-slate-100
-              hover:text-slate-700
-            "
-          >
-            <X size={20} />
-          </button>
-
-        </div>
-
-        {/* ================================= */}
-        {/* FORM */}
-        {/* ================================= */}
-
-        <form
-          onSubmit={handleSubmit(
-            onSubmit
-          )}
-          noValidate
-          className="
-            space-y-5
-            p-6
-            pb-8
+            mx-auto
+            w-full
+            max-w-3xl
+            max-h-[calc(100vh-48px)]
+            overflow-y-auto
+            rounded-2xl
+            border
+            border-slate-200
+            bg-white
+            shadow-xl
           "
         >
 
           {/* ================================= */}
-          {/* TITLE */}
-          {/* ================================= */}
-
-          <div>
-
-            <label
-              htmlFor="task-title"
-              className="
-                mb-2
-                block
-                text-sm
-                font-semibold
-                text-slate-700
-              "
-            >
-              Task Title
-
-              <span className="text-red-500">
-                {" "}*
-              </span>
-            </label>
-
-            <input
-              id="task-title"
-              type="text"
-              placeholder="Enter task title"
-              autoComplete="off"
-              {...register("title")}
-              className={`
-                w-full
-                rounded-xl
-                border
-                px-4
-                py-3
-                text-sm
-                outline-none
-                transition
-                focus:ring-2
-
-                ${
-                  errors.title
-                    ? `
-                      border-red-400
-                      focus:border-red-500
-                      focus:ring-red-100
-                    `
-                    : `
-                      border-slate-200
-                      focus:border-blue-500
-                      focus:ring-blue-100
-                    `
-                }
-              `}
-            />
-
-            {errors.title && (
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-red-500
-                "
-              >
-                {errors.title.message}
-              </p>
-            )}
-
-          </div>
-
-          {/* ================================= */}
-          {/* DESCRIPTION */}
-          {/* ================================= */}
-
-          <div>
-
-            <label
-              htmlFor="task-description"
-              className="
-                mb-2
-                block
-                text-sm
-                font-semibold
-                text-slate-700
-              "
-            >
-              Description
-
-              <span className="text-red-500">
-                {" "}*
-              </span>
-            </label>
-
-            <textarea
-              id="task-description"
-              rows={4}
-              placeholder="Enter task description"
-              autoComplete="off"
-              {...register("description")}
-              className={`
-                w-full
-                resize-none
-                rounded-xl
-                border
-                px-4
-                py-3
-                text-sm
-                outline-none
-                transition
-                focus:ring-2
-
-                ${
-                  errors.description
-                    ? `
-                      border-red-400
-                      focus:border-red-500
-                      focus:ring-red-100
-                    `
-                    : `
-                      border-slate-200
-                      focus:border-blue-500
-                      focus:ring-blue-100
-                    `
-                }
-              `}
-            />
-
-            {errors.description && (
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-red-500
-                "
-              >
-                {
-                  errors
-                    .description
-                    .message
-                }
-              </p>
-            )}
-
-          </div>
-
-          {/* ================================= */}
-          {/* DATE */}
-          {/* ================================= */}
-
-          <div>
-
-            <label
-              htmlFor="task-date"
-              className="
-                mb-2
-                block
-                text-sm
-                font-semibold
-                text-slate-700
-              "
-            >
-              Date
-
-              <span className="text-red-500">
-                {" "}*
-              </span>
-            </label>
-
-            <input
-              id="task-date"
-              type="date"
-              autoComplete="off"
-              {...register("date")}
-              className={`
-                w-full
-                rounded-xl
-                border
-                px-4
-                py-3
-                text-sm
-                outline-none
-                transition
-                focus:ring-2
-
-                ${
-                  errors.date
-                    ? `
-                      border-red-400
-                      focus:border-red-500
-                      focus:ring-red-100
-                    `
-                    : `
-                      border-slate-200
-                      focus:border-blue-500
-                      focus:ring-blue-100
-                    `
-                }
-              `}
-            />
-
-            {errors.date && (
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-red-500
-                "
-              >
-                {errors.date.message}
-              </p>
-            )}
-
-          </div>
-
-          {/* ================================= */}
-          {/* STATUS */}
-          {/* ================================= */}
-
-          <div>
-
-            <label
-              htmlFor="task-status"
-              className="
-                mb-2
-                block
-                text-sm
-                font-semibold
-                text-slate-700
-              "
-            >
-              Status
-
-              <span className="text-red-500">
-                {" "}*
-              </span>
-            </label>
-
-            <select
-              id="task-status"
-              autoComplete="off"
-              {...register("status")}
-              className="
-                w-full
-                rounded-xl
-                border
-                border-slate-200
-                bg-white
-                px-4
-                py-3
-                text-sm
-                outline-none
-                transition
-                focus:border-blue-500
-                focus:ring-2
-                focus:ring-blue-100
-              "
-            >
-
-              <option value="pending">
-                Pending
-              </option>
-
-              <option value="completed">
-                Completed
-              </option>
-
-            </select>
-
-            {errors.status && (
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-red-500
-                "
-              >
-                {errors.status.message}
-              </p>
-            )}
-
-          </div>
-
-          {/* ================================= */}
-          {/* PRIORITY */}
-          {/* ================================= */}
-
-          <div>
-
-            <label
-              htmlFor="task-priority"
-              className="
-                mb-2
-                block
-                text-sm
-                font-semibold
-                text-slate-700
-              "
-            >
-              Priority
-
-              <span className="text-red-500">
-                {" "}*
-              </span>
-            </label>
-
-            <select
-              id="task-priority"
-              autoComplete="off"
-              {...register("priority")}
-              className={`
-                w-full
-                rounded-xl
-                border
-                bg-white
-                px-4
-                py-3
-                text-sm
-                outline-none
-                transition
-                focus:ring-2
-
-                ${
-                  errors.priority
-                    ? `
-                      border-red-400
-                      focus:border-red-500
-                      focus:ring-red-100
-                    `
-                    : `
-                      border-slate-200
-                      focus:border-blue-500
-                      focus:ring-blue-100
-                    `
-                }
-              `}
-            >
-
-              <option value="low">
-                Low
-              </option>
-
-              <option value="medium">
-                Medium
-              </option>
-
-              <option value="high">
-                High
-              </option>
-
-            </select>
-
-            {errors.priority && (
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-red-500
-                "
-              >
-                {
-                  errors
-                    .priority
-                    .message
-                }
-              </p>
-            )}
-
-          </div>
-
-          {/* ================================= */}
-          {/* BUTTONS */}
+          {/* HEADER */}
           {/* ================================= */}
 
           <div
             className="
+              sticky
+              top-0
+              z-10
               flex
-              gap-3
-              pt-2
-              pb-1
+              items-center
+              justify-between
+              border-b
+              border-slate-100
+              bg-white
+              px-6
+              py-5
+              sm:px-8
+              sm:py-6
             "
           >
 
-            {/* CANCEL */}
+            <div>
+
+              <h2
+                className="
+                  text-2xl
+                  font-extrabold
+                  tracking-tight
+                  text-slate-900
+                  sm:text-3xl
+                "
+              >
+                {isEditMode
+                  ? "Edit Task"
+                  : "Add New Task"}
+              </h2>
+
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  text-slate-500
+                "
+              >
+                {isEditMode
+                  ? "Update your task details."
+                  : "Create a new task."}
+              </p>
+
+            </div>
+
+            {/* CLOSE */}
 
             <button
               type="button"
               onClick={onClose}
-              className="
-                flex-1
-                rounded-xl
-                border
-                border-slate-200
-                px-4
-                py-3
-                text-sm
-                font-bold
-                text-slate-700
-                transition
-                hover:bg-slate-50
-              "
-            >
-              Cancel
-            </button>
-
-            {/* ADD / UPDATE */}
-
-            <button
-              type="submit"
+              aria-label="Close task page"
               className="
                 flex
-                flex-1
+                h-10
+                w-10
+                shrink-0
                 items-center
                 justify-center
-                gap-2
                 rounded-xl
-                bg-blue-600
-                px-4
-                py-3
-                text-sm
-                font-bold
-                text-white
-                shadow-md
-                shadow-blue-200
+                text-slate-400
                 transition
-                hover:bg-blue-700
-                active:scale-95
+                hover:bg-slate-100
+                hover:text-slate-700
               "
             >
-
-              {isEditMode ? (
-                <>
-                  <Save size={17} />
-                  Update Task
-                </>
-              ) : (
-                <>
-                  <Plus size={17} />
-                  Add Task
-                </>
-              )}
-
+              <X size={21} />
             </button>
 
           </div>
 
-        </form>
+          {/* ================================= */}
+          {/* FORM */}
+          {/* ================================= */}
+
+          <form
+            onSubmit={handleSubmit(
+              onSubmit
+            )}
+            noValidate
+            className="
+              space-y-6
+              p-6
+              sm:p-8
+            "
+          >
+
+            {/* ================================= */}
+            {/* TITLE */}
+            {/* ================================= */}
+
+            <div>
+
+              <label
+                htmlFor="task-title"
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  text-slate-700
+                "
+              >
+                Task Title
+
+                <span className="text-red-500">
+                  {" "}*
+                </span>
+              </label>
+
+              <input
+                id="task-title"
+                type="text"
+                placeholder="Enter task title"
+                autoComplete="off"
+                {...register("title")}
+                className={`
+                  w-full
+                  rounded-xl
+                  border
+                  px-4
+                  py-3
+                  text-sm
+                  outline-none
+                  transition
+                  focus:ring-2
+
+                  ${
+                    errors.title
+                      ? `
+                        border-red-400
+                        focus:border-red-500
+                        focus:ring-red-100
+                      `
+                      : `
+                        border-slate-200
+                        focus:border-blue-500
+                        focus:ring-blue-100
+                      `
+                  }
+                `}
+              />
+
+              {errors.title && (
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
+                  {errors.title.message}
+                </p>
+              )}
+
+            </div>
+
+            {/* ================================= */}
+            {/* DESCRIPTION */}
+            {/* ================================= */}
+
+            <div>
+
+              <label
+                htmlFor="task-description"
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  text-slate-700
+                "
+              >
+                Description
+
+                <span className="text-red-500">
+                  {" "}*
+                </span>
+              </label>
+
+              <textarea
+                id="task-description"
+                rows={5}
+                placeholder="Enter task description"
+                autoComplete="off"
+                {...register(
+                  "description"
+                )}
+                className={`
+                  w-full
+                  resize-none
+                  rounded-xl
+                  border
+                  px-4
+                  py-3
+                  text-sm
+                  outline-none
+                  transition
+                  focus:ring-2
+
+                  ${
+                    errors.description
+                      ? `
+                        border-red-400
+                        focus:border-red-500
+                        focus:ring-red-100
+                      `
+                      : `
+                        border-slate-200
+                        focus:border-blue-500
+                        focus:ring-blue-100
+                      `
+                  }
+                `}
+              />
+
+              {errors.description && (
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
+                  {
+                    errors
+                      .description
+                      .message
+                  }
+                </p>
+              )}
+
+            </div>
+
+            {/* ================================= */}
+            {/* DATE */}
+            {/* ================================= */}
+
+            <div>
+
+              <label
+                htmlFor="task-date"
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  text-slate-700
+                "
+              >
+                Date
+
+                <span className="text-red-500">
+                  {" "}*
+                </span>
+              </label>
+
+              <input
+                id="task-date"
+                type="date"
+                autoComplete="off"
+                {...register("date")}
+                className={`
+                  w-full
+                  rounded-xl
+                  border
+                  px-4
+                  py-3
+                  text-sm
+                  outline-none
+                  transition
+                  focus:ring-2
+
+                  ${
+                    errors.date
+                      ? `
+                        border-red-400
+                        focus:border-red-500
+                        focus:ring-red-100
+                      `
+                      : `
+                        border-slate-200
+                        focus:border-blue-500
+                        focus:ring-blue-100
+                      `
+                  }
+                `}
+              />
+
+              {errors.date && (
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
+                  {errors.date.message}
+                </p>
+              )}
+
+            </div>
+
+            {/* ================================= */}
+            {/* STATUS */}
+            {/* ================================= */}
+
+            <div>
+
+              <label
+                htmlFor="task-status"
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  text-slate-700
+                "
+              >
+                Status
+
+                <span className="text-red-500">
+                  {" "}*
+                </span>
+              </label>
+
+              <select
+                id="task-status"
+                autoComplete="off"
+                {...register("status")}
+                className="
+                  w-full
+                  rounded-xl
+                  border
+                  border-slate-200
+                  bg-white
+                  px-4
+                  py-3
+                  text-sm
+                  outline-none
+                  transition
+                  focus:border-blue-500
+                  focus:ring-2
+                  focus:ring-blue-100
+                "
+              >
+
+                <option value="pending">
+                  Pending
+                </option>
+
+                <option value="completed">
+                  Completed
+                </option>
+
+              </select>
+
+              {errors.status && (
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
+                  {errors.status.message}
+                </p>
+              )}
+
+            </div>
+
+            {/* ================================= */}
+            {/* PRIORITY */}
+            {/* ================================= */}
+
+            <div>
+
+              <label
+                htmlFor="task-priority"
+                className="
+                  mb-2
+                  block
+                  text-sm
+                  font-semibold
+                  text-slate-700
+                "
+              >
+                Priority
+
+                <span className="text-red-500">
+                  {" "}*
+                </span>
+              </label>
+
+              <select
+                id="task-priority"
+                autoComplete="off"
+                {...register("priority")}
+                className={`
+                  w-full
+                  rounded-xl
+                  border
+                  bg-white
+                  px-4
+                  py-3
+                  text-sm
+                  outline-none
+                  transition
+                  focus:ring-2
+
+                  ${
+                    errors.priority
+                      ? `
+                        border-red-400
+                        focus:border-red-500
+                        focus:ring-red-100
+                      `
+                      : `
+                        border-slate-200
+                        focus:border-blue-500
+                        focus:ring-blue-100
+                      `
+                  }
+                `}
+              >
+
+                <option value="low">
+                  Low
+                </option>
+
+                <option value="medium">
+                  Medium
+                </option>
+
+                <option value="high">
+                  High
+                </option>
+
+              </select>
+
+              {errors.priority && (
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
+                  {
+                    errors
+                      .priority
+                      .message
+                  }
+                </p>
+              )}
+
+            </div>
+
+            {/* ================================= */}
+            {/* BUTTONS */}
+            {/* ================================= */}
+
+            <div
+              className="
+                flex
+                gap-3
+                border-t
+                border-slate-100
+                pt-6
+              "
+            >
+
+              {/* CANCEL */}
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="
+                  flex-1
+                  rounded-xl
+                  border
+                  border-slate-200
+                  px-4
+                  py-3
+                  text-sm
+                  font-bold
+                  text-slate-700
+                  transition
+                  hover:bg-slate-50
+                "
+              >
+                Cancel
+              </button>
+
+              {/* ADD / UPDATE */}
+
+              <button
+                type="submit"
+                className="
+                  flex
+                  flex-1
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-xl
+                  bg-blue-600
+                  px-4
+                  py-3
+                  text-sm
+                  font-bold
+                  text-white
+                  shadow-md
+                  shadow-blue-200
+                  transition
+                  hover:bg-blue-700
+                  active:scale-95
+                "
+              >
+
+                {isEditMode ? (
+                  <>
+                    <Save size={17} />
+                    Update Task
+                  </>
+                ) : (
+                  <>
+                    <Plus size={17} />
+                    Add Task
+                  </>
+                )}
+
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
 
       </div>
 
