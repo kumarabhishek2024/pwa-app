@@ -25,11 +25,20 @@ const taskSchema = z.object({
     .min(5, "Description must be at least 5 characters")
     .max(300, "Description must not exceed 300 characters"),
 
-  date: z.string().min(1, "Date is required"),
+  date: z
+    .string()
+    .min(1, "Date is required"),
 
-  status: z.enum(["pending", "completed"]),
+  status: z.enum([
+    "pending",
+    "completed",
+  ]),
 
-  priority: z.enum(["low", "medium", "high"]),
+  priority: z.enum([
+    "low",
+    "medium",
+    "high",
+  ]),
 });
 
 type TaskFormData = z.infer<typeof taskSchema>;
@@ -96,7 +105,32 @@ function AddTaskModal({
   onUpdateTask,
   editingTask,
 }: AddTaskModalProps) {
-  const isEditMode = editingTask !== null;
+
+  const isEditMode =
+    editingTask !== null;
+
+  // ==========================================
+  // ONLY BACKGROUND SCROLL LOCK
+  // ==========================================
+
+  useEffect(() => {
+    const previousBodyOverflow =
+      document.body.style.overflow;
+
+    const previousHtmlOverflow =
+      document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow =
+        previousBodyOverflow;
+
+      document.documentElement.style.overflow =
+        previousHtmlOverflow;
+    };
+  }, []);
 
   // ==========================================
   // FORM
@@ -106,7 +140,9 @@ function AddTaskModal({
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: {
+      errors,
+    },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
 
@@ -133,11 +169,13 @@ function AddTaskModal({
         description:
           editingTask.description,
 
-        date: formatDateForInput(
-          editingTask.date
-        ),
+        date:
+          formatDateForInput(
+            editingTask.date
+          ),
 
-        status: editingTask.status,
+        status:
+          editingTask.status,
 
         priority:
           editingTask.priority ?? "medium",
@@ -151,7 +189,10 @@ function AddTaskModal({
         priority: "medium",
       });
     }
-  }, [editingTask, reset]);
+  }, [
+    editingTask,
+    reset,
+  ]);
 
   // ==========================================
   // SUBMIT
@@ -160,21 +201,26 @@ function AddTaskModal({
   const onSubmit = (
     data: TaskFormData
   ) => {
-    // UPDATE TASK
+
+    // UPDATE
     if (editingTask) {
       const updatedTask: Task = {
         ...editingTask,
 
-        title: data.title.trim(),
+        title:
+          data.title.trim(),
 
         description:
           data.description.trim(),
 
-        date: data.date,
+        date:
+          data.date,
 
-        status: data.status,
+        status:
+          data.status,
 
-        priority: data.priority,
+        priority:
+          data.priority,
       };
 
       onUpdateTask(updatedTask);
@@ -182,18 +228,22 @@ function AddTaskModal({
       return;
     }
 
-    // ADD TASK
+    // ADD
     const newTask: Omit<Task, "id"> = {
-      title: data.title.trim(),
+      title:
+        data.title.trim(),
 
       description:
         data.description.trim(),
 
-      date: data.date,
+      date:
+        data.date,
 
-      status: data.status,
+      status:
+        data.status,
 
-      priority: data.priority,
+      priority:
+        data.priority,
     };
 
     onAddTask(newTask);
@@ -209,38 +259,47 @@ function AddTaskModal({
         fixed
         inset-0
         z-[9999]
+        flex
+        h-screen
+        items-center
+        justify-center
+        overflow-hidden
         bg-white
         lg:left-64
       "
     >
+
       {/* ===================================== */}
-      {/* NEW PAGE STYLE MAIN AREA */}
+      {/* CENTER */}
       {/* ===================================== */}
 
       <div
         className="
           flex
-          h-screen
+          h-full
           w-full
           items-center
           justify-center
-          overflow-hidden
-          bg-white
           px-4
+          py-6
           sm:px-6
           lg:px-10
         "
       >
+
         {/* =================================== */}
-        {/* ADD TASK FORM */}
+        {/* ADD TASK CARD */}
         {/* =================================== */}
 
         <div
           className="
             w-full
             max-w-3xl
-            max-h-[calc(100vh-40px)]
+
+            max-h-[calc(100vh-48px)]
+
             overflow-y-auto
+
             rounded-2xl
             border
             border-slate-200
@@ -248,6 +307,7 @@ function AddTaskModal({
             shadow-xl
           "
         >
+
           {/* ================================= */}
           {/* HEADER */}
           {/* ================================= */}
@@ -257,19 +317,26 @@ function AddTaskModal({
               sticky
               top-0
               z-10
+
               flex
               items-center
               justify-between
+
               border-b
               border-slate-100
+
               bg-white
+
               px-6
               py-5
+
               sm:px-8
               sm:py-6
             "
           >
+
             <div>
+
               <h2
                 className="
                   text-2xl
@@ -295,6 +362,7 @@ function AddTaskModal({
                   ? "Update your task details."
                   : "Create a new task."}
               </p>
+
             </div>
 
             {/* CLOSE */}
@@ -319,6 +387,7 @@ function AddTaskModal({
             >
               <X size={21} />
             </button>
+
           </div>
 
           {/* ================================= */}
@@ -329,16 +398,18 @@ function AddTaskModal({
             onSubmit={handleSubmit(onSubmit)}
             noValidate
             className="
-              space-y-6
+              space-y-5
               p-6
               sm:p-8
             "
           >
+
             {/* ================================= */}
             {/* TITLE */}
             {/* ================================= */}
 
             <div>
+
               <label
                 htmlFor="task-title"
                 className="
@@ -349,9 +420,10 @@ function AddTaskModal({
                   text-slate-700
                 "
               >
-                Task Title{" "}
+                Task Title
+
                 <span className="text-red-500">
-                  *
+                  {" "}*
                 </span>
               </label>
 
@@ -371,6 +443,7 @@ function AddTaskModal({
                   outline-none
                   transition
                   focus:ring-2
+
                   ${
                     errors.title
                       ? `
@@ -388,10 +461,17 @@ function AddTaskModal({
               />
 
               {errors.title && (
-                <p className="mt-1 text-sm text-red-500">
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
                   {errors.title.message}
                 </p>
               )}
+
             </div>
 
             {/* ================================= */}
@@ -399,6 +479,7 @@ function AddTaskModal({
             {/* ================================= */}
 
             <div>
+
               <label
                 htmlFor="task-description"
                 className="
@@ -409,15 +490,16 @@ function AddTaskModal({
                   text-slate-700
                 "
               >
-                Description{" "}
+                Description
+
                 <span className="text-red-500">
-                  *
+                  {" "}*
                 </span>
               </label>
 
               <textarea
                 id="task-description"
-                rows={5}
+                rows={4}
                 placeholder="Enter task description"
                 autoComplete="off"
                 {...register("description")}
@@ -432,6 +514,7 @@ function AddTaskModal({
                   outline-none
                   transition
                   focus:ring-2
+
                   ${
                     errors.description
                       ? `
@@ -449,10 +532,19 @@ function AddTaskModal({
               />
 
               {errors.description && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.description.message}
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
+                  {
+                    errors.description.message
+                  }
                 </p>
               )}
+
             </div>
 
             {/* ================================= */}
@@ -460,6 +552,7 @@ function AddTaskModal({
             {/* ================================= */}
 
             <div>
+
               <label
                 htmlFor="task-date"
                 className="
@@ -470,9 +563,10 @@ function AddTaskModal({
                   text-slate-700
                 "
               >
-                Date{" "}
+                Date
+
                 <span className="text-red-500">
-                  *
+                  {" "}*
                 </span>
               </label>
 
@@ -491,6 +585,7 @@ function AddTaskModal({
                   outline-none
                   transition
                   focus:ring-2
+
                   ${
                     errors.date
                       ? `
@@ -508,10 +603,17 @@ function AddTaskModal({
               />
 
               {errors.date && (
-                <p className="mt-1 text-sm text-red-500">
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
                   {errors.date.message}
                 </p>
               )}
+
             </div>
 
             {/* ================================= */}
@@ -519,6 +621,7 @@ function AddTaskModal({
             {/* ================================= */}
 
             <div>
+
               <label
                 htmlFor="task-status"
                 className="
@@ -529,15 +632,15 @@ function AddTaskModal({
                   text-slate-700
                 "
               >
-                Status{" "}
+                Status
+
                 <span className="text-red-500">
-                  *
+                  {" "}*
                 </span>
               </label>
 
               <select
                 id="task-status"
-                autoComplete="off"
                 {...register("status")}
                 className="
                   w-full
@@ -555,6 +658,7 @@ function AddTaskModal({
                   focus:ring-blue-100
                 "
               >
+
                 <option value="pending">
                   Pending
                 </option>
@@ -562,13 +666,21 @@ function AddTaskModal({
                 <option value="completed">
                   Completed
                 </option>
+
               </select>
 
               {errors.status && (
-                <p className="mt-1 text-sm text-red-500">
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
                   {errors.status.message}
                 </p>
               )}
+
             </div>
 
             {/* ================================= */}
@@ -576,6 +688,7 @@ function AddTaskModal({
             {/* ================================= */}
 
             <div>
+
               <label
                 htmlFor="task-priority"
                 className="
@@ -586,15 +699,15 @@ function AddTaskModal({
                   text-slate-700
                 "
               >
-                Priority{" "}
+                Priority
+
                 <span className="text-red-500">
-                  *
+                  {" "}*
                 </span>
               </label>
 
               <select
                 id="task-priority"
-                autoComplete="off"
                 {...register("priority")}
                 className={`
                   w-full
@@ -607,6 +720,7 @@ function AddTaskModal({
                   outline-none
                   transition
                   focus:ring-2
+
                   ${
                     errors.priority
                       ? `
@@ -622,6 +736,7 @@ function AddTaskModal({
                   }
                 `}
               >
+
                 <option value="low">
                   Low
                 </option>
@@ -633,13 +748,23 @@ function AddTaskModal({
                 <option value="high">
                   High
                 </option>
+
               </select>
 
               {errors.priority && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.priority.message}
+                <p
+                  className="
+                    mt-1
+                    text-sm
+                    text-red-500
+                  "
+                >
+                  {
+                    errors.priority.message
+                  }
                 </p>
               )}
+
             </div>
 
             {/* ================================= */}
@@ -652,9 +777,10 @@ function AddTaskModal({
                 gap-3
                 border-t
                 border-slate-100
-                pt-6
+                pt-5
               "
             >
+
               {/* CANCEL */}
 
               <button
@@ -701,6 +827,7 @@ function AddTaskModal({
                   active:scale-95
                 "
               >
+
                 {isEditMode ? (
                   <>
                     <Save size={17} />
@@ -712,11 +839,17 @@ function AddTaskModal({
                     Add Task
                   </>
                 )}
+
               </button>
+
             </div>
+
           </form>
+
         </div>
+
       </div>
+
     </div>
   );
 }
