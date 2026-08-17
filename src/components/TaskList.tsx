@@ -92,14 +92,14 @@ function TaskList({
                     )}
 
                     <h3
-                      className={`min-w-0 break-words text-lg font-bold ${
+                      className={`min-w-0 wrap-break-word text-lg font-bold ${
                         task.status === "completed"
                           ? "text-slate-400 line-through"
                           : "text-slate-900"
                       }`}
                     >
                       {task.title}
-                    </h3>
+                    </h3>    
 
                   </div>
 

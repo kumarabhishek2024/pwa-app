@@ -71,7 +71,6 @@ type FilterStatus =
 // ============================================
 
 function App() {
-
   // ==========================================
   // DYNAMIC GREETING
   // ==========================================
@@ -81,13 +80,10 @@ function App() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentHour(
-        new Date().getHours()
-      );
+      setCurrentHour(new Date().getHours());
     }, 60000);
 
-    return () =>
-      clearInterval(timer);
+    return () => clearInterval(timer);
   }, []);
 
   const greeting =
@@ -103,37 +99,34 @@ function App() {
   // TASKS STATE
   // ==========================================
 
-  const [tasks, setTasks] =
-    useState<Task[]>(() => {
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const savedTasks =
+      localStorage.getItem("tasks");
 
-      const savedTasks =
-        localStorage.getItem("tasks");
+    if (!savedTasks) {
+      return defaultTasks;
+    }
 
-      if (!savedTasks) {
+    try {
+      const parsedTasks = JSON.parse(
+        savedTasks
+      );
+
+      if (!Array.isArray(parsedTasks)) {
         return defaultTasks;
       }
 
-      try {
-
-        const parsedTasks =
-          JSON.parse(savedTasks);
-
-        if (!Array.isArray(parsedTasks)) {
-          return defaultTasks;
-        }
-
-        return parsedTasks.map(
-          (task: Task) => ({
-            ...task,
-            priority:
-              task.priority ?? "medium",
-          })
-        );
-
-      } catch {
-        return defaultTasks;
-      }
-    });
+      return parsedTasks.map(
+        (task: Task) => ({
+          ...task,
+          priority:
+            task.priority ?? "medium",
+        })
+      );
+    } catch {
+      return defaultTasks;
+    }
+  });
 
   // ==========================================
   // PROFILE STATE
@@ -141,7 +134,6 @@ function App() {
 
   const [profile, setProfile] =
     useState<ProfileData>(() => {
-
       const savedProfile =
         localStorage.getItem("profile");
 
@@ -150,24 +142,20 @@ function App() {
       }
 
       try {
-
         const parsedProfile =
           JSON.parse(savedProfile);
 
         return {
           name:
-            typeof parsedProfile.name ===
-            "string"
+            typeof parsedProfile.name === "string"
               ? parsedProfile.name
               : defaultProfile.name,
 
           image:
-            typeof parsedProfile.image ===
-            "string"
+            typeof parsedProfile.image === "string"
               ? parsedProfile.image
               : defaultProfile.image,
         };
-
       } catch {
         return defaultProfile;
       }
@@ -193,20 +181,13 @@ function App() {
   ] = useState(false);
 
   // ==========================================
-  // PROFILE SAVED MESSAGE
+  // PROFILE SAVED MESSAGE STATE
   // ==========================================
 
   const [
     showProfileSaved,
     setShowProfileSaved,
   ] = useState(false);
-
-  // ==========================================
-  // TASK SUCCESS MESSAGE
-  // ==========================================
-
-  const [taskMessage, setTaskMessage] =
-    useState("");
 
   // ==========================================
   // SEARCH STATE
@@ -227,12 +208,10 @@ function App() {
   // ==========================================
 
   useEffect(() => {
-
     localStorage.setItem(
       "tasks",
       JSON.stringify(tasks)
     );
-
   }, [tasks]);
 
   // ==========================================
@@ -240,12 +219,10 @@ function App() {
   // ==========================================
 
   useEffect(() => {
-
     localStorage.setItem(
       "profile",
       JSON.stringify(profile)
     );
-
   }, [profile]);
 
   // ==========================================
@@ -255,9 +232,7 @@ function App() {
   const addTask = (
     newTask: Omit<Task, "id">
   ) => {
-
     setTasks((previousTasks) => {
-
       const highestId =
         previousTasks.length > 0
           ? Math.max(
@@ -278,28 +253,14 @@ function App() {
       ];
     });
 
-    // Close modal
     setIsModalOpen(false);
-
-    // Show success message
-    setTaskMessage(
-      "Task added successfully!"
-    );
-
-    // Hide message after 2.5 seconds
-    setTimeout(() => {
-      setTaskMessage("");
-    }, 2500);
   };
 
   // ==========================================
-  // OPEN EDIT MODAL
+  // OPEN EDIT TASK
   // ==========================================
 
-  const openEditModal = (
-    task: Task
-  ) => {
-
+  const openEditModal = (task: Task) => {
     setEditingTask(task);
     setIsModalOpen(true);
   };
@@ -311,28 +272,16 @@ function App() {
   const updateTask = (
     updatedTask: Task
   ) => {
-
     setTasks((previousTasks) =>
-      previousTasks.map(
-        (task) =>
-          task.id === updatedTask.id
-            ? updatedTask
-            : task
+      previousTasks.map((task) =>
+        task.id === updatedTask.id
+          ? updatedTask
+          : task
       )
     );
 
     setEditingTask(null);
     setIsModalOpen(false);
-
-    // Show success message
-    setTaskMessage(
-      "Task updated successfully!"
-    );
-
-    // Hide message after 2.5 seconds
-    setTimeout(() => {
-      setTaskMessage("");
-    }, 2500);
   };
 
   // ==========================================
@@ -340,38 +289,27 @@ function App() {
   // ==========================================
 
   const deleteTask = (id: number) => {
-  const confirmed =
-    window.confirm(
-      "Are you sure you want to delete this task?"
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to delete this task?"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setTasks((previousTasks) =>
+      previousTasks.filter(
+        (task) => task.id !== id
+      )
     );
-
-  if (!confirmed) {
-    return;
-  }
-
-  setTasks((previousTasks) =>
-    previousTasks.filter(
-      (task) => task.id !== id
-    )
-  );
-
-  // Show success message
-  setTaskMessage(
-    "Task deleted successfully!"
-  );
-
-  // Hide message after 2.5 seconds
-  setTimeout(() => {
-    setTaskMessage("");
-  }, 2500);
-};
+  };
 
   // ==========================================
-  // CLOSE TASK MODAL
+  // CLOSE TASK PAGE
   // ==========================================
 
   const closeModal = () => {
-
     setIsModalOpen(false);
     setEditingTask(null);
   };
@@ -399,7 +337,6 @@ function App() {
   const handleSaveProfile = (
     updatedProfile: ProfileData
   ) => {
-
     // Update profile
     setProfile(updatedProfile);
 
@@ -409,7 +346,7 @@ function App() {
     // Show success message
     setShowProfileSaved(true);
 
-    // Hide success message after 2.5 seconds
+    // Hide success message
     setTimeout(() => {
       setShowProfileSaved(false);
     }, 2500);
@@ -419,23 +356,18 @@ function App() {
   // MARK COMPLETED / PENDING
   // ==========================================
 
-  const toggleTask = (
-    id: number
-  ) => {
-
+  const toggleTask = (id: number) => {
     setTasks((previousTasks) =>
-      previousTasks.map(
-        (task) =>
-          task.id === id
-            ? {
-                ...task,
-                status:
-                  task.status ===
-                  "completed"
-                    ? "pending"
-                    : "completed",
-              }
-            : task
+      previousTasks.map((task) =>
+        task.id === id
+          ? {
+              ...task,
+              status:
+                task.status === "completed"
+                  ? "pending"
+                  : "completed",
+            }
+          : task
       )
     );
   };
@@ -444,8 +376,7 @@ function App() {
   // TASK COUNTERS
   // ==========================================
 
-  const totalTasks =
-    tasks.length;
+  const totalTasks = tasks.length;
 
   const completedTasks =
     tasks.filter(
@@ -463,9 +394,8 @@ function App() {
   // SEARCH + FILTER
   // ==========================================
 
-  const filteredTasks =
-    tasks.filter((task) => {
-
+  const filteredTasks = tasks.filter(
+    (task) => {
       const searchText =
         searchQuery
           .trim()
@@ -487,23 +417,49 @@ function App() {
         matchesSearch &&
         matchesFilter
       );
-    });
+    }
+  );
 
   // ==========================================
-  // UI
+  // ADD / EDIT TASK FULL PAGE
+  // ==========================================
+
+  if (isModalOpen) {
+    return (
+      <div className="min-h-screen bg-white">
+
+        <main className="min-h-screen lg:ml-64">
+
+          {/* HEADER */}
+
+          <Header
+            profile={profile}
+            onProfileClick={openProfileModal}
+          />
+
+          {/* ADD / EDIT TASK */}
+
+          <AddTaskModal
+            onClose={closeModal}
+            onAddTask={addTask}
+            onUpdateTask={updateTask}
+            editingTask={editingTask}
+          />
+
+        </main>
+
+      </div>
+    );
+  }
+
+  // ==========================================
+  // NORMAL DASHBOARD UI
   // ==========================================
 
   return (
     <div className="min-h-screen bg-slate-50">
 
-      <main
-        className="
-          min-h-screen
-          pb-24
-          lg:ml-64
-          lg:pb-0
-        "
-      >
+      <main className="min-h-screen pb-24 lg:ml-64 lg:pb-0">
 
         {/* ================================= */}
         {/* HEADER */}
@@ -511,45 +467,20 @@ function App() {
 
         <Header
           profile={profile}
-          onProfileClick={
-            openProfileModal
-          }
+          onProfileClick={openProfileModal}
         />
 
         {/* ================================= */}
         {/* GREETING */}
         {/* ================================= */}
 
-        <section
-          className="
-            px-5
-            pb-6
-            pt-6
-            lg:px-10
-            lg:pb-8
-            lg:pt-8
-          "
-        >
+        <section className="px-5 pb-6 pt-6 lg:px-10 lg:pb-8 lg:pt-8">
 
-          <h2
-            className="
-              text-2xl
-              font-extrabold
-              tracking-tight
-              text-slate-900
-              lg:text-3xl
-            "
-          >
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 lg:text-3xl">
             {greeting}, {profile.name}
           </h2>
 
-          <p
-            className="
-              mt-2
-              text-base
-              text-slate-500
-            "
-          >
+          <p className="mt-2 text-base text-slate-500">
             Let's make today productive.
           </p>
 
@@ -569,59 +500,27 @@ function App() {
         {/* TASK SECTION */}
         {/* ================================= */}
 
-        <section
-          className="
-            mt-8
-            lg:mt-10
-          "
-        >
+        <section className="mt-8 lg:mt-10">
 
-          {/* Heading */}
+          {/* HEADING */}
 
-          <div
-            className="
-              px-5
-              lg:px-10
-            "
-          >
+          <div className="px-5 lg:px-10">
 
-            <div
-              className="
-                flex
-                items-center
-                justify-between
-              "
-            >
+            <div className="flex items-center justify-between">
 
               <div>
 
-                <h2
-                  className="
-                    text-2xl
-                    font-extrabold
-                    text-slate-900
-                    lg:text-3xl
-                  "
-                >
+                <h2 className="text-2xl font-extrabold text-slate-900 lg:text-3xl">
                   Your Tasks
                 </h2>
 
-                <p
-                  className="
-                    mt-1
-                    hidden
-                    text-sm
-                    text-slate-500
-                    lg:block
-                  "
-                >
-                  Keep track of your daily
-                  activities
+                <p className="mt-1 hidden text-sm text-slate-500 lg:block">
+                  Keep track of your daily activities
                 </p>
 
               </div>
 
-              {/* Add Task */}
+              {/* ADD TASK */}
 
               <button
                 type="button"
@@ -650,12 +549,7 @@ function App() {
 
                 <Plus size={18} />
 
-                <span
-                  className="
-                    hidden
-                    sm:inline
-                  "
-                >
+                <span className="hidden sm:inline">
                   Add Task
                 </span>
 
@@ -667,24 +561,11 @@ function App() {
             {/* SEARCH + FILTER */}
             {/* ================================= */}
 
-            <div
-              className="
-                mt-5
-                flex
-                flex-col
-                gap-3
-                sm:flex-row
-              "
-            >
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
 
-              {/* Search */}
+              {/* SEARCH */}
 
-              <div
-                className="
-                  relative
-                  flex-1
-                "
-              >
+              <div className="relative flex-1">
 
                 <Search
                   size={18}
@@ -698,7 +579,6 @@ function App() {
                 />
 
                 <input
-                  id="task-search"
                   type="text"
                   value={searchQuery}
                   onChange={(event) =>
@@ -707,7 +587,6 @@ function App() {
                     )
                   }
                   placeholder="Search tasks..."
-                  autoComplete="off"
                   className="
                     w-full
                     rounded-xl
@@ -729,21 +608,15 @@ function App() {
 
               </div>
 
-              {/* Filter */}
+              {/* FILTER */}
 
-              <div
-                className="
-                  sm:w-48
-                "
-              >
+              <div className="sm:w-48">
 
                 <select
-                  id="task-filter"
                   value={filterStatus}
                   onChange={(event) =>
                     setFilterStatus(
-                      event.target.value as
-                        FilterStatus
+                      event.target.value as FilterStatus
                     )
                   }
                   className="
@@ -788,11 +661,7 @@ function App() {
           {/* TASK LIST */}
           {/* ================================= */}
 
-          <div
-            className="
-              mt-5
-            "
-          >
+          <div className="mt-5">
 
             {filteredTasks.length > 0 ? (
 
@@ -805,38 +674,24 @@ function App() {
 
             ) : (
 
-              <div
-                className="
-                  mx-5
-                  rounded-2xl
-                  border
-                  border-dashed
-                  border-slate-300
-                  bg-white
-                  p-8
-                  text-center
-                  lg:mx-10
-                "
-              >
+              <div className="
+                mx-5
+                rounded-2xl
+                border
+                border-dashed
+                border-slate-300
+                bg-white
+                p-8
+                text-center
+                lg:mx-10
+              ">
 
-                <h3
-                  className="
-                    font-bold
-                    text-slate-700
-                  "
-                >
+                <h3 className="font-bold text-slate-700">
                   No tasks found
                 </h3>
 
-                <p
-                  className="
-                    mt-1
-                    text-sm
-                    text-slate-500
-                  "
-                >
-                  Try a different search
-                  or filter.
+                <p className="mt-1 text-sm text-slate-500">
+                  Try a different search or filter.
                 </p>
 
               </div>
@@ -851,41 +706,31 @@ function App() {
         {/* PROGRESS */}
         {/* ================================= */}
 
-        <section
-          className="
-            mx-5
-            mt-8
-            rounded-2xl
-            border
-            border-blue-100
-            bg-blue-50
-            p-5
-            lg:mx-10
-            lg:mt-10
-            lg:p-7
-          "
-        >
+        <section className="
+          mx-5
+          mt-8
+          rounded-2xl
+          border
+          border-blue-100
+          bg-blue-50
+          p-5
+          lg:mx-10
+          lg:mt-10
+          lg:p-7
+        ">
 
-          <div
-            className="
+          <div className="flex items-center gap-4">
+
+            <div className="
               flex
+              h-14
+              w-14
+              shrink-0
               items-center
-              gap-4
-            "
-          >
-
-            <div
-              className="
-                flex
-                h-14
-                w-14
-                shrink-0
-                items-center
-                justify-center
-                rounded-full
-                bg-blue-100
-              "
-            >
+              justify-center
+              rounded-full
+              bg-blue-100
+            ">
 
               <Trophy
                 size={26}
@@ -896,35 +741,21 @@ function App() {
 
             <div>
 
-              <h3
-                className="
-                  text-lg
-                  font-extrabold
-                  text-blue-700
-                  lg:text-xl
-                "
-              >
+              <h3 className="
+                text-lg
+                font-extrabold
+                text-blue-700
+                lg:text-xl
+              ">
                 Great Progress!
               </h3>
 
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-slate-600
-                "
-              >
+              <p className="mt-1 text-sm text-slate-600">
                 You have completed{" "}
                 {completedTasks} tasks.
               </p>
 
-              <p
-                className="
-                  mt-1
-                  text-sm
-                  text-slate-600
-                "
-              >
+              <p className="mt-1 text-sm text-slate-600">
                 Keep going!
               </p>
 
@@ -933,19 +764,6 @@ function App() {
           </div>
 
         </section>
-
-        {/* ================================= */}
-        {/* ADD / EDIT TASK MODAL */}
-        {/* ================================= */}
-
-        {isModalOpen && (
-          <AddTaskModal
-            onClose={closeModal}
-            onAddTask={addTask}
-            onUpdateTask={updateTask}
-            editingTask={editingTask}
-          />
-        )}
 
         {/* ================================= */}
         {/* PROFILE MODAL */}
@@ -960,58 +778,7 @@ function App() {
         )}
 
         {/* ================================= */}
-        {/* TASK SUCCESS MESSAGE */}
-        {/* ================================= */}
-
-        {taskMessage && (
-          <div
-            className="
-              fixed
-              bottom-6
-              right-6
-              z-10000
-              flex
-              items-center
-              gap-3
-              rounded-xl
-              bg-green-600
-              px-5
-              py-3
-              text-sm
-              font-bold
-              text-white
-              shadow-xl
-              animate-in
-              fade-in
-              slide-in-from-bottom-3
-              duration-300
-            "
-          >
-
-            <span
-              className="
-                flex
-                h-6
-                w-6
-                items-center
-                justify-center
-                rounded-full
-                bg-white/20
-                text-sm
-              "
-            >
-              ✓
-            </span>
-
-            <span>
-              {taskMessage}
-            </span>
-
-          </div>
-        )}
-
-        {/* ================================= */}
-        {/* PROFILE SAVED SUCCESS MESSAGE */}
+        {/* PROFILE SAVED MESSAGE */}
         {/* ================================= */}
 
         {showProfileSaved && (
@@ -1020,7 +787,7 @@ function App() {
               fixed
               bottom-6
               right-6
-              z-10000
+              z-[10000]
               flex
               items-center
               gap-3
