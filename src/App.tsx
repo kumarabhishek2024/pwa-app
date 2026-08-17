@@ -181,13 +181,18 @@ function App() {
   ] = useState(false);
 
   // ==========================================
-  // PROFILE SAVED MESSAGE STATE
+  // PROFILE SUCCESS MESSAGE
   // ==========================================
 
-  const [
-    showProfileSaved,
-    setShowProfileSaved,
-  ] = useState(false);
+  const [showProfileSaved, setShowProfileSaved] =
+    useState(false);
+
+  // ==========================================
+  // TASK SUCCESS MESSAGE
+  // ==========================================
+
+  const [taskSuccessMessage, setTaskSuccessMessage] =
+    useState("");
 
   // ==========================================
   // SEARCH STATE
@@ -253,7 +258,16 @@ function App() {
       ];
     });
 
+    // SUCCESS MESSAGE
+    setTaskSuccessMessage(
+      "Task added successfully!"
+    );
+
     setIsModalOpen(false);
+
+    setTimeout(() => {
+      setTaskSuccessMessage("");
+    }, 2500);
   };
 
   // ==========================================
@@ -280,8 +294,17 @@ function App() {
       )
     );
 
+    // SUCCESS MESSAGE
+    setTaskSuccessMessage(
+      "Task updated successfully!"
+    );
+
     setEditingTask(null);
     setIsModalOpen(false);
+
+    setTimeout(() => {
+      setTaskSuccessMessage("");
+    }, 2500);
   };
 
   // ==========================================
@@ -303,10 +326,19 @@ function App() {
         (task) => task.id !== id
       )
     );
+
+    // SUCCESS MESSAGE
+    setTaskSuccessMessage(
+      "Task deleted successfully!"
+    );
+
+    setTimeout(() => {
+      setTaskSuccessMessage("");
+    }, 2500);
   };
 
   // ==========================================
-  // CLOSE TASK PAGE
+  // CLOSE TASK MODAL
   // ==========================================
 
   const closeModal = () => {
@@ -337,16 +369,13 @@ function App() {
   const handleSaveProfile = (
     updatedProfile: ProfileData
   ) => {
-    // Update profile
     setProfile(updatedProfile);
 
-    // Close profile modal
     setIsProfileModalOpen(false);
 
-    // Show success message
+    // PROFILE SUCCESS MESSAGE
     setShowProfileSaved(true);
 
-    // Hide success message
     setTimeout(() => {
       setShowProfileSaved(false);
     }, 2500);
@@ -421,39 +450,7 @@ function App() {
   );
 
   // ==========================================
-  // ADD / EDIT TASK FULL PAGE
-  // ==========================================
-
-  if (isModalOpen) {
-    return (
-      <div className="min-h-screen bg-white">
-
-        <main className="min-h-screen lg:ml-64">
-
-          {/* HEADER */}
-
-          <Header
-            profile={profile}
-            onProfileClick={openProfileModal}
-          />
-
-          {/* ADD / EDIT TASK */}
-
-          <AddTaskModal
-            onClose={closeModal}
-            onAddTask={addTask}
-            onUpdateTask={updateTask}
-            editingTask={editingTask}
-          />
-
-        </main>
-
-      </div>
-    );
-  }
-
-  // ==========================================
-  // NORMAL DASHBOARD UI
+  // UI
   // ==========================================
 
   return (
@@ -766,6 +763,19 @@ function App() {
         </section>
 
         {/* ================================= */}
+        {/* ADD / EDIT TASK MODAL */}
+        {/* ================================= */}
+
+        {isModalOpen && (
+          <AddTaskModal
+            onClose={closeModal}
+            onAddTask={addTask}
+            onUpdateTask={updateTask}
+            editingTask={editingTask}
+          />
+        )}
+
+        {/* ================================= */}
         {/* PROFILE MODAL */}
         {/* ================================= */}
 
@@ -778,7 +788,54 @@ function App() {
         )}
 
         {/* ================================= */}
-        {/* PROFILE SAVED MESSAGE */}
+        {/* TASK SUCCESS MESSAGE */}
+        {/* ================================= */}
+
+        {taskSuccessMessage && (
+          <div
+            className="
+              fixed
+              bottom-6
+              right-6
+              z-[10000]
+              flex
+              items-center
+              gap-3
+              rounded-xl
+              bg-green-600
+              px-5
+              py-3
+              text-sm
+              font-bold
+              text-white
+              shadow-xl
+            "
+          >
+
+            <span
+              className="
+                flex
+                h-6
+                w-6
+                items-center
+                justify-center
+                rounded-full
+                bg-white/20
+                text-sm
+              "
+            >
+              ✓
+            </span>
+
+            <span>
+              {taskSuccessMessage}
+            </span>
+
+          </div>
+        )}
+
+        {/* ================================= */}
+        {/* PROFILE SUCCESS MESSAGE */}
         {/* ================================= */}
 
         {showProfileSaved && (
