@@ -4,6 +4,8 @@ import {
   CircleCheck,
 } from "lucide-react";
 
+import { useTheme } from "../context/useTheme";
+
 interface SummaryCardsProps {
   total: number;
   pending: number;
@@ -15,91 +17,162 @@ function SummaryCards({
   pending,
   completed,
 }: SummaryCardsProps) {
+  const { theme } = useTheme();
+
+  const isDark = theme === "dark";
+
   const cards = [
     {
       title: "Total Tasks",
       count: total,
       icon: ListTodo,
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-      countColor: "text-blue-600",
+      iconBg: isDark ? "bg-blue-500/10" : "bg-blue-50",
+      iconColor: isDark ? "text-blue-400" : "text-blue-600",
+      countColor: isDark ? "text-blue-400" : "text-blue-600",
     },
     {
       title: "Pending",
       count: pending,
       icon: Clock3,
-      iconBg: "bg-orange-100",
-      iconColor: "text-orange-600",
-      countColor: "text-orange-600",
+      iconBg: isDark ? "bg-orange-500/10" : "bg-orange-50",
+      iconColor: isDark ? "text-orange-400" : "text-orange-600",
+      countColor: isDark ? "text-orange-400" : "text-orange-600",
     },
     {
       title: "Completed",
       count: completed,
       icon: CircleCheck,
-      iconBg: "bg-green-100",
-      iconColor: "text-green-600",
-      countColor: "text-green-600",
+      iconBg: isDark ? "bg-green-500/10" : "bg-green-50",
+      iconColor: isDark ? "text-green-400" : "text-green-600",
+      countColor: isDark ? "text-green-400" : "text-green-600",
     },
   ];
 
   return (
-    <section className="grid grid-cols-3 gap-3 px-5 lg:gap-5 lg:px-10">
+    <section
+      className="
+        grid
+        grid-cols-3
+
+        gap-3
+        px-3
+
+        sm:gap-3
+        sm:px-4
+
+        lg:gap-4
+        lg:px-8
+      "
+    >
       {cards.map((card) => {
         const Icon = card.icon;
 
         return (
           <div
             key={card.title}
-            className="
+            className={`
               group
-              rounded-2xl
+              min-w-0
+              rounded-xl
               border
-              border-slate-200
-              bg-white
-              p-4
+
+              px-0
+              py-2
+
               shadow-sm
               transition-all
-              duration-200
-              hover:-translate-y-1
+              duration-300
+
+              hover:-translate-y-0.5
               hover:shadow-md
-              sm:p-5
+
+              sm:rounded-2xl
+              sm:px-0.5
+              sm:py-3
+
               lg:rounded-3xl
-              lg:p-6
-            "
+              lg:px-1
+              lg:py-4
+
+              ${
+                isDark
+                  ? `
+                    border-slate-800
+                    bg-slate-900
+                    shadow-black/10
+                    hover:border-slate-700
+                  `
+                  : `
+                    border-slate-200
+                    bg-white
+                    hover:border-slate-300
+                  `
+              }
+            `}
           >
             {/* ICON */}
+
             <div className="flex justify-center">
               <div
                 className={`
                   flex
-                  h-10
-                  w-10
+                  h-8
+                  w-8
                   items-center
                   justify-center
-                  rounded-xl
-                  ${card.iconBg}
-                  ${card.iconColor}
+                  rounded-lg
+
+                  sm:h-10
+                  sm:w-10
+                  sm:rounded-xl
+
+                  lg:h-11
+                  lg:w-11
+
                   transition-transform
                   duration-200
-                  group-hover:scale-110
-                  sm:h-11
-                  sm:w-11
+                  group-hover:scale-105
+
+                  ${card.iconBg}
+                  ${card.iconColor}
                 `}
               >
-                <Icon size={21} strokeWidth={2.2} />
+                <Icon
+                  size={16}
+                  strokeWidth={2.3}
+                  className="
+                    sm:h-[19px]
+                    sm:w-[19px]
+
+                    lg:h-[21px]
+                    lg:w-[21px]
+                  "
+                />
               </div>
             </div>
 
             {/* COUNT */}
-            <div className="mt-3 flex justify-center">
+
+            <div
+              className="
+                mt-2
+                flex
+                justify-center
+
+                sm:mt-3
+              "
+            >
               <span
                 className={`
-                  text-3xl
-                  font-extrabold
+                  text-xl
+                  font-bold
+                  leading-none
                   tracking-tight
+
+                  sm:text-2xl
+                  lg:text-3xl
+
                   ${card.countColor}
-                  sm:text-4xl
-                  lg:text-5xl
                 `}
               >
                 {card.count}
@@ -107,9 +180,30 @@ function SummaryCards({
             </div>
 
             {/* TITLE */}
-           <p className="mt-2 text-center text-sm font-bold text-slate-600 sm:text-base lg:text-lg">
-  {card.title}
-</p>
+
+            <p
+              className={`
+                mt-1
+                truncate
+                text-center
+                text-[11px]
+                font-semibold
+                leading-4
+
+                sm:mt-2
+                sm:text-xs
+
+                lg:text-sm
+
+                ${
+                  isDark
+                    ? "text-slate-300"
+                    : "text-slate-600"
+                }
+              `}
+            >
+              {card.title}
+            </p>
           </div>
         );
       })}

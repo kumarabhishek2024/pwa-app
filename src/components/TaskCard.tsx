@@ -9,134 +9,347 @@ import {
 
 import type { Task } from "../types/task";
 
+import { useTheme } from "../context/useTheme";
+
 interface TaskCardProps {
   task: Task;
   onToggle: (id: number) => void;
+  onEdit?: (task: Task) => void;
+  onDelete?: (id: number) => void;
+  onTaskClick?: (task: Task) => void;
 }
 
 const TaskCard = ({
   task,
   onToggle,
+  onEdit,
+  onDelete,
+  onTaskClick,
 }: TaskCardProps) => {
+  const { theme } = useTheme();
 
-  const isCompleted =
-    task.status === "completed";
+  const isDark = theme === "dark";
+  const isCompleted = task.status === "completed";
 
   return (
     <div
-      className={`group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg lg:p-6 ${
-        isCompleted
-          ? "border-l-4 border-l-green-500"
-          : "border-l-4 border-l-red-500"
-      }`}
+      className={`
+        group
+        rounded-2xl
+        border
+        px-2
+        py-2.5
+        shadow-sm
+        transition-all
+        duration-200
+        hover:-translate-y-0.5
+        hover:shadow-md
+        sm:px-2.5
+        sm:py-3
+        lg:px-3
+        lg:py-3.5
+
+        ${
+          isDark
+            ? `
+              border-slate-800
+              bg-slate-900
+              shadow-black/10
+            `
+            : `
+              border-slate-200
+              bg-white
+              shadow-slate-200/50
+            `
+        }
+
+        ${
+          isCompleted
+            ? "border-l-4 border-l-green-500"
+            : "border-l-4 border-l-red-500"
+        }
+      `}
     >
+      <div className="flex gap-2 sm:gap-2.5">
 
-      <div className="flex gap-4">
+        {/* TASK ICON */}
 
-        {/* Task Icon */}
         <div
-          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200 group-hover:scale-105 ${
-            isCompleted
-              ? "bg-green-100 text-green-600"
-              : "bg-blue-100 text-blue-600"
-          }`}
+          className={`
+            flex
+            h-10
+            w-10
+            shrink-0
+            items-center
+            justify-center
+            rounded-xl
+            transition-transform
+            duration-200
+            group-hover:scale-105
+            sm:h-11
+            sm:w-11
+
+            ${
+              isCompleted
+                ? isDark
+                  ? "bg-green-500/10 text-green-400"
+                  : "bg-green-100 text-green-600"
+                : isDark
+                  ? "bg-blue-500/10 text-blue-400"
+                  : "bg-blue-100 text-blue-600"
+            }
+          `}
         >
           {isCompleted ? (
-            <Rocket
-              size={26}
-              strokeWidth={2.2}
-            />
+            <Rocket size={21} strokeWidth={2.2} />
           ) : (
-            <BookOpen
-              size={26}
-              strokeWidth={2.2}
-            />
+            <BookOpen size={21} strokeWidth={2.2} />
           )}
         </div>
 
-        {/* Content */}
+        {/* CONTENT */}
+
         <div className="min-w-0 flex-1">
 
-          {/* Title */}
-          <div className="flex items-start justify-between gap-3">
+          {/* TITLE + ACTION */}
 
-            <div className="min-w-0">
+          <div className="flex items-start justify-between gap-1.5">
 
-              <h3 className="truncate text-lg font-extrabold tracking-tight text-slate-900">
+            <button
+              type="button"
+              onClick={() => onTaskClick?.(task)}
+              className="min-w-0 flex-1 text-left"
+            >
+              <h3
+                className={`
+                  truncate
+                  text-base
+                  font-bold
+                  leading-5
+                  tracking-tight
+                  sm:text-[17px]
+
+                  ${
+                    isDark
+                      ? "text-white"
+                      : "text-slate-900"
+                  }
+                `}
+              >
                 {task.title}
               </h3>
 
-              <p className="mt-1.5 text-sm leading-6 text-slate-500">
+              <p
+                className={`
+                  mt-0.5
+                  line-clamp-2
+                  text-[13px]
+                  font-normal
+                  leading-5
+
+                  ${
+                    isDark
+                      ? "text-slate-400"
+                      : "text-slate-500"
+                  }
+                `}
+              >
                 {task.description}
               </p>
+            </button>
 
-            </div>
+            {/* MORE */}
 
-            {/* More */}
             <button
               type="button"
               aria-label="More options"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-            >
-              <MoreVertical size={20} />
-            </button>
+              className={`
+                flex
+                h-8
+                w-8
+                shrink-0
+                items-center
+                justify-center
+                rounded-lg
+                transition
 
+                ${
+                  isDark
+                    ? `
+                      text-slate-500
+                      hover:bg-slate-800
+                      hover:text-slate-200
+                    `
+                    : `
+                      text-slate-400
+                      hover:bg-slate-100
+                      hover:text-slate-700
+                    `
+                }
+              `}
+            >
+              <MoreVertical size={19} />
+            </button>
           </div>
 
-          {/* Date + Status */}
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+          {/* DATE + STATUS */}
 
-            {/* Date */}
-            <div className="flex items-center gap-1.5 text-sm font-medium text-slate-500">
+          <div
+            className={`
+              mt-2
+              flex
+              flex-wrap
+              items-center
+              justify-between
+              gap-1.5
+              border-t
+              pt-2
+              sm:mt-2.5
+              sm:pt-2.5
 
+              ${
+                isDark
+                  ? "border-slate-800"
+                  : "border-slate-100"
+              }
+            `}
+          >
+            {/* DATE */}
+
+            <div
+              className={`
+                flex
+                items-center
+                gap-1
+                text-[12px]
+                font-medium
+                leading-4
+                sm:text-[13px]
+
+                ${
+                  isDark
+                    ? "text-slate-400"
+                    : "text-slate-500"
+                }
+              `}
+            >
               <CalendarDays
-                size={16}
-                className="text-slate-400"
+                size={15}
+                className={
+                  isDark
+                    ? "text-slate-500"
+                    : "text-slate-400"
+                }
               />
 
-              <span>
-                {task.date}
-              </span>
-
+              <span>{task.date}</span>
             </div>
 
-            {/* Status */}
+            {/* STATUS */}
+
             <button
               type="button"
               onClick={() => onToggle(task.id)}
-              className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${
-                isCompleted
-                  ? "bg-green-100 text-green-700 hover:bg-green-200"
-                  : "bg-red-100 text-red-700 hover:bg-red-200"
-              }`}
-            >
+              className={`
+                flex
+                items-center
+                gap-1
+                rounded-full
+                px-2.5
+                py-1
+                text-[11px]
+                font-semibold
+                leading-4
+                transition-all
+                duration-200
+                hover:scale-105
+                active:scale-95
+                sm:px-3
+                sm:text-xs
 
+                ${
+                  isCompleted
+                    ? isDark
+                      ? "bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                      : "bg-green-100 text-green-700 hover:bg-green-200"
+                    : isDark
+                      ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                      : "bg-red-100 text-red-700 hover:bg-red-200"
+                }
+              `}
+            >
               {isCompleted ? (
                 <>
-                  <Check
-                    size={14}
-                    strokeWidth={3}
-                  />
+                  <Check size={13} strokeWidth={3} />
                   Completed
                 </>
               ) : (
                 <>
                   <Circle
-                    size={10}
+                    size={9}
                     fill="currentColor"
                   />
                   Pending
                 </>
               )}
-
             </button>
-
           </div>
 
+          {/* OPTIONAL ACTIONS */}
+
+          {(onEdit || onDelete) && (
+            <div className="mt-1 flex items-center justify-end gap-1">
+              {onEdit && (
+                <button
+                  type="button"
+                  onClick={() => onEdit(task)}
+                  className={`
+                    rounded-lg
+                    px-2
+                    py-1
+                    text-xs
+                    font-semibold
+                    leading-4
+                    transition
+
+                    ${
+                      isDark
+                        ? "text-blue-400 hover:bg-blue-500/10"
+                        : "text-blue-600 hover:bg-blue-50"
+                    }
+                  `}
+                >
+                  Edit
+                </button>
+              )}
+
+              {onDelete && (
+                <button
+                  type="button"
+                  onClick={() => onDelete(task.id)}
+                  className={`
+                    rounded-lg
+                    px-2
+                    py-1
+                    text-xs
+                    font-semibold
+                    leading-4
+                    transition
+
+                    ${
+                      isDark
+                        ? "text-red-400 hover:bg-red-500/10"
+                        : "text-red-600 hover:bg-red-50"
+                    }
+                  `}
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          )}
         </div>
-
       </div>
-
     </div>
   );
 };

@@ -4,6 +4,10 @@ import {
   User,
 } from "lucide-react";
 
+import {
+  useTheme,
+} from "../context/useTheme";
+
 interface BottomNavProps {
   isModalOpen?: boolean;
   onProfileClick?: () => void;
@@ -13,17 +17,22 @@ const BottomNav = ({
   isModalOpen = false,
   onProfileClick,
 }: BottomNavProps) => {
+  const { theme } = useTheme();
 
-  // Modal open hai to navigation hide rahega
   if (isModalOpen) {
     return null;
   }
 
+  const isDark = theme === "dark";
+
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* ============================= */}
+      {/* DESKTOP SIDEBAR */}
+      {/* ============================= */}
+
       <aside
-        className="
+        className={`
           fixed
           left-0
           top-0
@@ -31,75 +40,109 @@ const BottomNav = ({
           hidden
           h-screen
           w-64
+          flex-col
           border-r
-          border-slate-100
-          bg-white
           p-6
           shadow-sm
+          transition-colors
+          duration-300
           lg:flex
-          lg:flex-col
-        "
+
+          ${
+            isDark
+              ? `
+                border-slate-800
+                bg-slate-950
+                shadow-black/20
+              `
+              : `
+                border-slate-200
+                bg-white
+                shadow-slate-200/60
+              `
+          }
+        `}
       >
-
         <div>
-
           <h1
-            className="
+            className={`
               text-2xl
-              font-extrabold
+              font-bold
+              leading-tight
               tracking-tight
-              text-blue-600
-            "
+
+              ${
+                isDark
+                  ? "text-blue-400"
+                  : "text-blue-600"
+              }
+            `}
           >
             My Tasks
           </h1>
 
           <p
-            className="
+            className={`
               mt-1
-              text-sm
+              text-[13px]
               font-medium
-              text-slate-500
-            "
+              leading-5
+
+              ${
+                isDark
+                  ? "text-slate-400"
+                  : "text-slate-500"
+              }
+            `}
           >
             Task Manager
           </p>
-
         </div>
 
-        <nav
-          className="
-            mt-10
-            space-y-3
-          "
-        >
+        <nav className="mt-10 space-y-3">
 
-          {/* Home */}
+          {/* HOME */}
+
           <button
             type="button"
-            className="
+            className={`
               flex
               w-full
               items-center
               gap-3
               rounded-xl
-              bg-blue-50
               px-4
               py-3
               text-left
+              text-[13px]
               font-semibold
-              text-blue-600
-              shadow-sm
-            "
+              leading-5
+              transition-all
+
+              ${
+                isDark
+                  ? `
+                    bg-blue-500/10
+                    text-blue-400
+                    shadow-sm
+                  `
+                  : `
+                    bg-blue-50
+                    text-blue-600
+                    shadow-sm
+                  `
+              }
+            `}
           >
             <Home size={20} />
             Home
           </button>
 
-          {/* Tasks */}
+          {/* TASKS */}
+
           <button
             type="button"
-            className="
+            className={`
               flex
               w-full
               items-center
@@ -108,22 +151,36 @@ const BottomNav = ({
               px-4
               py-3
               text-left
+              text-[13px]
               font-medium
-              text-slate-600
-              transition
-              hover:bg-slate-50
-              hover:text-blue-600
-            "
+              leading-5
+              transition-all
+
+              ${
+                isDark
+                  ? `
+                    text-slate-400
+                    hover:bg-slate-900
+                    hover:text-blue-400
+                  `
+                  : `
+                    text-slate-600
+                    hover:bg-slate-50
+                    hover:text-blue-600
+                  `
+              }
+            `}
           >
             <ListTodo size={20} />
             Tasks
           </button>
 
-          {/* Profile */}
+          {/* PROFILE */}
+
           <button
             type="button"
             onClick={onProfileClick}
-            className="
+            className={`
               flex
               w-full
               items-center
@@ -132,109 +189,175 @@ const BottomNav = ({
               px-4
               py-3
               text-left
+              text-[13px]
               font-medium
-              text-slate-600
-              transition
-              hover:bg-slate-50
-              hover:text-blue-600
-            "
+              leading-5
+              transition-all
+
+              ${
+                isDark
+                  ? `
+                    text-slate-400
+                    hover:bg-slate-900
+                    hover:text-blue-400
+                  `
+                  : `
+                    text-slate-600
+                    hover:bg-slate-50
+                    hover:text-blue-600
+                  `
+              }
+            `}
           >
             <User size={20} />
             Profile
           </button>
 
         </nav>
-
       </aside>
 
-      {/* Mobile Navigation */}
+      {/* ============================= */}
+      {/* MOBILE NAVIGATION */}
+      {/* ============================= */}
+
       <nav
-        className="
+        className={`
           fixed
           bottom-0
           left-0
           z-40
           w-full
           border-t
-          border-slate-100
-          bg-white/95
-          px-6
+          px-4
           py-3
           shadow-lg
-          backdrop-blur-md
+          backdrop-blur-xl
+          transition-colors
+          duration-300
           lg:hidden
-        "
+          sm:px-6
+
+          ${
+            isDark
+              ? `
+                border-slate-800
+                bg-slate-950/95
+              `
+              : `
+                border-slate-200
+                bg-white/95
+              `
+          }
+        `}
       >
+        <div className="flex justify-around">
 
-        <div
-          className="
-            flex
-            justify-around
-          "
-        >
+          {/* HOME */}
 
-          {/* Home */}
           <button
             type="button"
-            className="
+            className={`
               flex
+              min-w-16
               flex-col
               items-center
               gap-1
+              rounded-xl
+              px-2
+              py-1
               font-semibold
-              text-blue-600
-            "
+              transition
+
+              ${
+                isDark
+                  ? "text-blue-400"
+                  : "text-blue-600"
+              }
+            `}
           >
             <Home size={22} />
 
-            <span className="text-xs">
+            <span className="text-[11px] font-medium leading-4">
               Home
             </span>
           </button>
 
-          {/* Tasks */}
+          {/* TASKS */}
+
           <button
             type="button"
-            className="
+            className={`
               flex
+              min-w-16
               flex-col
               items-center
               gap-1
-              text-slate-500
+              rounded-xl
+              px-2
+              py-1
               transition
-              hover:text-blue-600
-            "
+
+              ${
+                isDark
+                  ? `
+                    text-slate-500
+                    hover:bg-slate-800
+                    hover:text-blue-400
+                  `
+                  : `
+                    text-slate-500
+                    hover:bg-slate-50
+                    hover:text-blue-600
+                  `
+              }
+            `}
           >
             <ListTodo size={22} />
 
-            <span className="text-xs">
+            <span className="text-[11px] font-medium leading-4">
               Tasks
             </span>
           </button>
 
-          {/* Profile */}
+          {/* PROFILE */}
+
           <button
             type="button"
             onClick={onProfileClick}
-            className="
+            className={`
               flex
+              min-w-16
               flex-col
               items-center
               gap-1
-              text-slate-500
+              rounded-xl
+              px-2
+              py-1
               transition
-              hover:text-blue-600
-            "
+
+              ${
+                isDark
+                  ? `
+                    text-slate-500
+                    hover:bg-slate-800
+                    hover:text-blue-400
+                  `
+                  : `
+                    text-slate-500
+                    hover:bg-slate-50
+                    hover:text-blue-600
+                  `
+              }
+            `}
           >
             <User size={22} />
 
-            <span className="text-xs">
+            <span className="text-[11px] font-medium leading-4">
               Profile
             </span>
           </button>
 
         </div>
-
       </nav>
     </>
   );

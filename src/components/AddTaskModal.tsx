@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X, Save, Plus } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Check, X, Save, Plus, CalendarDays } from "lucide-react";
+import { useTheme } from "../context/useTheme";
 
 import type { Task } from "../types/task";
 
@@ -72,14 +73,24 @@ const formatDateForInput = (
     return "";
   }
 
-  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+  // Already YYYY-MM-DD
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(date)
+  ) {
     return date;
   }
 
+  // Old format
+  // Example: 12 Aug 2026
   const parsedDate = new Date(date);
 
-  if (!Number.isNaN(parsedDate.getTime())) {
-    const year = parsedDate.getFullYear();
+  if (
+    !Number.isNaN(
+      parsedDate.getTime()
+    )
+  ) {
+    const year =
+      parsedDate.getFullYear();
 
     const month = String(
       parsedDate.getMonth() + 1
@@ -95,6 +106,57 @@ const formatDateForInput = (
   return "";
 };
 
+
+// ============================================
+// DATE PICKER HELPERS
+// ============================================
+
+const parseDateValue = (value: string): Date | null => {
+  if (!value) return null;
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const [, year, month, day] = match;
+  const date = new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day)
+  );
+
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const formatDateValue = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const isSameDay = (first: Date | null, second: Date): boolean => {
+  if (!first) return false;
+
+  return (
+    first.getFullYear() === second.getFullYear() &&
+    first.getMonth() === second.getMonth() &&
+    first.getDate() === second.getDate()
+  );
+};
+
+const getCalendarDays = (year: number, month: number): Date[] => {
+  const firstDay = new Date(year, month, 1);
+  const startDay = firstDay.getDay();
+  const startDate = new Date(year, month, 1 - startDay);
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + index);
+    return date;
+  });
+};
+
 // ============================================
 // COMPONENT
 // ============================================
@@ -105,12 +167,56 @@ function AddTaskModal({
   onUpdateTask,
   editingTask,
 }: AddTaskModalProps) {
+  const { theme } = useTheme();
 
   const isEditMode =
     editingTask !== null;
 
+  const isDark =
+    theme === "dark";
+
+  const [openDropdown, setOpenDropdown] =
+    useState<"status" | "priority" | null>(
+      null
+    );
+
+  const [isDatePickerOpen, setIsDatePickerOpen] =
+    useState(false);
+
+  const [calendarDate, setCalendarDate] =
+    useState(() => {
+      const today = new Date();
+      return new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+      );
+    });
+
+  useEffect(() => {
+    if (openDropdown === null) {
+      return;
+    }
+
+    const handleOutsideClick = () => {
+      setOpenDropdown(null);
+    };
+
+    document.addEventListener(
+      "click",
+      handleOutsideClick
+    );
+
+    return () => {
+      document.removeEventListener(
+        "click",
+        handleOutsideClick
+      );
+    };
+  }, [openDropdown]);
+
   // ==========================================
-  // ONLY BACKGROUND SCROLL LOCK
+  // BACKGROUND SCROLL LOCK
   // ==========================================
 
   useEffect(() => {
@@ -120,8 +226,11 @@ function AddTaskModal({
     const previousHtmlOverflow =
       document.documentElement.style.overflow;
 
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
+
+    document.documentElement.style.overflow =
+      "hidden";
 
     return () => {
       document.body.style.overflow =
@@ -140,11 +249,14 @@ function AddTaskModal({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: {
       errors,
     },
   } = useForm<TaskFormData>({
-    resolver: zodResolver(taskSchema),
+    resolver:
+      zodResolver(taskSchema),
 
     defaultValues: {
       title: "",
@@ -157,14 +269,19 @@ function AddTaskModal({
     mode: "onBlur",
   });
 
+  const statusValue = watch("status");
+  const priorityValue = watch("priority");
+  const dateValue = watch("date");
+
   // ==========================================
-  // EDIT DATA
+  // LOAD EDITING TASK
   // ==========================================
 
   useEffect(() => {
     if (editingTask) {
       reset({
-        title: editingTask.title,
+        title:
+          editingTask.title,
 
         description:
           editingTask.description,
@@ -178,7 +295,8 @@ function AddTaskModal({
           editingTask.status,
 
         priority:
-          editingTask.priority ?? "medium",
+          editingTask.priority ??
+          "medium",
       });
     } else {
       reset({
@@ -194,6 +312,100 @@ function AddTaskModal({
     reset,
   ]);
 
+  useEffect(() => {
+    const selectedDate = parseDateValue(dateValue);
+
+    if (selectedDate) {
+      setCalendarDate(
+        new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          1
+        )
+      );
+    }
+  }, [dateValue]);
+
+  const calendarDays = getCalendarDays(
+    calendarDate.getFullYear(),
+    calendarDate.getMonth()
+  );
+
+  const selectedDate = parseDateValue(dateValue);
+  const today = new Date();
+
+  const monthLabel = calendarDate.toLocaleDateString(
+    "en-US",
+    {
+      month: "long",
+      year: "numeric",
+    }
+  );
+
+  const displayDate = selectedDate
+    ? selectedDate.toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "Select a date";
+
+  const goToPreviousMonth = () => {
+    setCalendarDate(
+      new Date(
+        calendarDate.getFullYear(),
+        calendarDate.getMonth() - 1,
+        1
+      )
+    );
+  };
+
+  const goToNextMonth = () => {
+    setCalendarDate(
+      new Date(
+        calendarDate.getFullYear(),
+        calendarDate.getMonth() + 1,
+        1
+      )
+    );
+  };
+
+  const selectDate = (date: Date) => {
+    setValue(
+      "date",
+      formatDateValue(date),
+      {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      }
+    );
+
+    setCalendarDate(
+      new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        1
+      )
+    );
+
+    setIsDatePickerOpen(false);
+  };
+
+  const clearDate = () => {
+    setValue("date", "", {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+
+    setIsDatePickerOpen(false);
+  };
+
+  const selectToday = () => {
+    selectDate(today);
+  };
+
   // ==========================================
   // SUBMIT
   // ==========================================
@@ -202,7 +414,10 @@ function AddTaskModal({
     data: TaskFormData
   ) => {
 
+    // ========================================
     // UPDATE
+    // ========================================
+
     if (editingTask) {
       const updatedTask: Task = {
         ...editingTask,
@@ -223,13 +438,21 @@ function AddTaskModal({
           data.priority,
       };
 
-      onUpdateTask(updatedTask);
+      onUpdateTask(
+        updatedTask
+      );
 
       return;
     }
 
+    // ========================================
     // ADD
-    const newTask: Omit<Task, "id"> = {
+    // ========================================
+
+    const newTask: Omit<
+      Task,
+      "id"
+    > = {
       title:
         data.title.trim(),
 
@@ -255,18 +478,28 @@ function AddTaskModal({
 
   return (
     <div
-      className="
+      className={`
         fixed
         inset-0
         z-[9999]
         flex
-        h-screen
-        items-center
+        min-h-screen
+        items-stretch
         justify-center
-        overflow-hidden
-        bg-white
+        overflow-y-auto
+        overflow-x-hidden
+        overscroll-contain
+        transition-colors
+        duration-300
+
+        ${
+          isDark
+            ? "bg-slate-950"
+            : "bg-white"
+        }
+
         lg:left-64
-      "
+      `}
     >
 
       {/* ===================================== */}
@@ -276,36 +509,57 @@ function AddTaskModal({
       <div
         className="
           flex
-          h-full
+          min-h-screen
           w-full
           items-center
           justify-center
-          px-4
-          py-6
+          px-3
+          py-3
           sm:px-6
+          sm:py-6
           lg:px-10
         "
       >
 
         {/* =================================== */}
-        {/* ADD TASK CARD */}
+        {/* MODAL CARD */}
         {/* =================================== */}
 
         <div
-          className="
+          className={`
+            modal-scrollbar
+            ${isDark ? "dark-scrollbar" : ""}
+
             w-full
             max-w-3xl
 
-            max-h-[calc(100vh-48px)]
-
+            max-h-[calc(100dvh-24px)]
             overflow-y-auto
+            overscroll-contain
+
+            sm:max-h-[calc(100dvh-48px)]
 
             rounded-2xl
             border
-            border-slate-200
-            bg-white
             shadow-xl
-          "
+
+            transition-colors
+            duration-300
+
+            ${
+              isDark
+                ? `
+                  border-slate-700
+                  bg-slate-900
+                  shadow-black/40
+                `
+                : `
+                  border-slate-200
+                  bg-white
+                  shadow-slate-200/70
+                `
+            }
+          `}
         >
 
           {/* ================================= */}
@@ -313,7 +567,7 @@ function AddTaskModal({
           {/* ================================= */}
 
           <div
-            className="
+            className={`
               sticky
               top-0
               z-10
@@ -323,28 +577,49 @@ function AddTaskModal({
               justify-between
 
               border-b
-              border-slate-100
-
-              bg-white
 
               px-6
               py-5
 
+              transition-colors
+              duration-300
+
               sm:px-8
               sm:py-6
-            "
+
+              ${
+                isDark
+                  ? `
+                    border-slate-700
+                    bg-slate-900
+                  `
+                  : `
+                    border-slate-100
+                    bg-white
+                  `
+              }
+            `}
           >
 
             <div>
 
               <h2
-                className="
+                className={`
                   text-2xl
                   font-extrabold
                   tracking-tight
-                  text-slate-900
+
+                  transition-colors
+                  duration-300
+
                   sm:text-3xl
-                "
+
+                  ${
+                    isDark
+                      ? "text-white"
+                      : "text-slate-900"
+                  }
+                `}
               >
                 {isEditMode
                   ? "Edit Task"
@@ -352,11 +627,19 @@ function AddTaskModal({
               </h2>
 
               <p
-                className="
+                className={`
                   mt-1
                   text-sm
-                  text-slate-500
-                "
+
+                  transition-colors
+                  duration-300
+
+                  ${
+                    isDark
+                      ? "text-slate-400"
+                      : "text-slate-500"
+                  }
+                `}
               >
                 {isEditMode
                   ? "Update your task details."
@@ -371,7 +654,7 @@ function AddTaskModal({
               type="button"
               onClick={onClose}
               aria-label="Close task page"
-              className="
+              className={`
                 flex
                 h-10
                 w-10
@@ -379,11 +662,22 @@ function AddTaskModal({
                 items-center
                 justify-center
                 rounded-xl
-                text-slate-400
                 transition
-                hover:bg-slate-100
-                hover:text-slate-700
-              "
+
+                ${
+                  isDark
+                    ? `
+                      text-slate-400
+                      hover:bg-slate-800
+                      hover:text-white
+                    `
+                    : `
+                      text-slate-400
+                      hover:bg-slate-100
+                      hover:text-slate-700
+                    `
+                }
+              `}
             >
               <X size={21} />
             </button>
@@ -395,7 +689,9 @@ function AddTaskModal({
           {/* ================================= */}
 
           <form
-            onSubmit={handleSubmit(onSubmit)}
+            onSubmit={handleSubmit(
+              onSubmit
+            )}
             noValidate
             className="
               space-y-5
@@ -412,13 +708,20 @@ function AddTaskModal({
 
               <label
                 htmlFor="task-title"
-                className="
+                className={`
                   mb-2
                   block
                   text-sm
                   font-semibold
-                  text-slate-700
-                "
+
+                  transition-colors
+
+                  ${
+                    isDark
+                      ? "text-slate-200"
+                      : "text-slate-700"
+                  }
+                `}
               >
                 Task Title
 
@@ -442,6 +745,7 @@ function AddTaskModal({
                   text-sm
                   outline-none
                   transition
+
                   focus:ring-2
 
                   ${
@@ -451,11 +755,23 @@ function AddTaskModal({
                         focus:border-red-500
                         focus:ring-red-100
                       `
-                      : `
-                        border-slate-200
-                        focus:border-blue-500
-                        focus:ring-blue-100
-                      `
+                      : isDark
+                        ? `
+                          border-slate-700
+                          bg-slate-800
+                          text-white
+                          placeholder:text-slate-500
+                          focus:border-blue-500
+                          focus:ring-blue-900/50
+                        `
+                        : `
+                          border-slate-200
+                          bg-white
+                          text-slate-700
+                          placeholder:text-slate-400
+                          focus:border-blue-500
+                          focus:ring-blue-100
+                        `
                   }
                 `}
               />
@@ -468,7 +784,9 @@ function AddTaskModal({
                     text-red-500
                   "
                 >
-                  {errors.title.message}
+                  {
+                    errors.title.message
+                  }
                 </p>
               )}
 
@@ -482,13 +800,20 @@ function AddTaskModal({
 
               <label
                 htmlFor="task-description"
-                className="
+                className={`
                   mb-2
                   block
                   text-sm
                   font-semibold
-                  text-slate-700
-                "
+
+                  transition-colors
+
+                  ${
+                    isDark
+                      ? "text-slate-200"
+                      : "text-slate-700"
+                  }
+                `}
               >
                 Description
 
@@ -502,7 +827,9 @@ function AddTaskModal({
                 rows={4}
                 placeholder="Enter task description"
                 autoComplete="off"
-                {...register("description")}
+                {...register(
+                  "description"
+                )}
                 className={`
                   w-full
                   resize-none
@@ -513,6 +840,7 @@ function AddTaskModal({
                   text-sm
                   outline-none
                   transition
+
                   focus:ring-2
 
                   ${
@@ -522,11 +850,23 @@ function AddTaskModal({
                         focus:border-red-500
                         focus:ring-red-100
                       `
-                      : `
-                        border-slate-200
-                        focus:border-blue-500
-                        focus:ring-blue-100
-                      `
+                      : isDark
+                        ? `
+                          border-slate-700
+                          bg-slate-800
+                          text-white
+                          placeholder:text-slate-500
+                          focus:border-blue-500
+                          focus:ring-blue-900/50
+                        `
+                        : `
+                          border-slate-200
+                          bg-white
+                          text-slate-700
+                          placeholder:text-slate-400
+                          focus:border-blue-500
+                          focus:ring-blue-100
+                        `
                   }
                 `}
               />
@@ -551,17 +891,24 @@ function AddTaskModal({
             {/* DATE */}
             {/* ================================= */}
 
-            <div>
+            <div className="min-w-0">
 
               <label
                 htmlFor="task-date"
-                className="
+                className={`
                   mb-2
                   block
                   text-sm
                   font-semibold
-                  text-slate-700
-                "
+
+                  transition-colors
+
+                  ${
+                    isDark
+                      ? "text-slate-200"
+                      : "text-slate-700"
+                  }
+                `}
               >
                 Date
 
@@ -571,16 +918,33 @@ function AddTaskModal({
               </label>
 
               <input
-                id="task-date"
-                type="date"
-                autoComplete="off"
+                type="hidden"
                 {...register("date")}
+              />
+
+              <button
+                id="task-date"
+                type="button"
+                onClick={() => {
+                  setOpenDropdown(null);
+                  setIsDatePickerOpen(
+                    (current) => !current
+                  );
+                }}
+                aria-haspopup="dialog"
+                aria-expanded={isDatePickerOpen}
                 className={`
+                  flex
                   w-full
+                  min-w-0
+                  items-center
+                  justify-between
+                  gap-3
                   rounded-xl
                   border
                   px-4
                   py-3
+                  text-left
                   text-sm
                   outline-none
                   transition
@@ -593,14 +957,288 @@ function AddTaskModal({
                         focus:border-red-500
                         focus:ring-red-100
                       `
-                      : `
-                        border-slate-200
-                        focus:border-blue-500
-                        focus:ring-blue-100
-                      `
+                      : isDark
+                        ? `
+                          border-slate-700
+                          bg-slate-800
+                          text-white
+                          hover:border-slate-600
+                          focus:border-blue-500
+                          focus:ring-blue-900/50
+                        `
+                        : `
+                          border-slate-200
+                          bg-white
+                          text-slate-700
+                          hover:border-slate-300
+                          focus:border-blue-500
+                          focus:ring-blue-100
+                        `
                   }
                 `}
-              />
+              >
+                <span
+                  className={
+                    selectedDate
+                      ? ""
+                      : isDark
+                        ? "text-slate-500"
+                        : "text-slate-400"
+                  }
+                >
+                  {displayDate}
+                </span>
+
+                <CalendarDays
+                  size={18}
+                  className={`
+                    shrink-0
+                    ${
+                      isDark
+                        ? "text-slate-400"
+                        : "text-slate-500"
+                    }
+                  `}
+                />
+              </button>
+
+              {isDatePickerOpen && (
+                <div
+                  role="dialog"
+                  aria-label="Choose task date"
+                  className={`
+                    mt-2
+                    w-full
+                    overflow-hidden
+                    rounded-2xl
+                    border
+                    box-border
+                    p-2.5
+                    shadow-lg
+
+                    ${
+                      isDark
+                        ? "border-slate-700 bg-slate-900 shadow-black/30"
+                        : "border-slate-200 bg-white shadow-slate-200/70"
+                    }
+                  `}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={goToPreviousMonth}
+                      aria-label="Previous month"
+                      className={`
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-lg
+                        transition
+
+                        ${
+                          isDark
+                            ? "text-slate-300 hover:bg-slate-800 hover:text-white"
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        }
+                      `}
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+
+                    <div
+                      className={`
+                        text-sm
+                        font-bold
+
+                        ${
+                          isDark
+                            ? "text-white"
+                            : "text-slate-800"
+                        }
+                      `}
+                    >
+                      {monthLabel}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={goToNextMonth}
+                      aria-label="Next month"
+                      className={`
+                        flex
+                        h-9
+                        w-9
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-lg
+                        transition
+
+                        ${
+                          isDark
+                            ? "text-slate-300 hover:bg-slate-800 hover:text-white"
+                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        }
+                      `}
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+
+                  <div className="mt-3 grid w-full grid-cols-7 gap-0.5 sm:gap-1">
+                    {[
+                      "Su",
+                      "Mo",
+                      "Tu",
+                      "We",
+                      "Th",
+                      "Fr",
+                      "Sa",
+                    ].map((day) => (
+                      <div
+                        key={day}
+                        className={`
+                          flex
+                          h-8
+                          items-center
+                          justify-center
+                          text-[11px]
+                          font-bold
+
+                          ${
+                            isDark
+                              ? "text-slate-500"
+                              : "text-slate-400"
+                          }
+                        `}
+                      >
+                        {day}
+                      </div>
+                    ))}
+
+                    {calendarDays.map((date) => {
+                      const isCurrentMonth =
+                        date.getMonth() ===
+                        calendarDate.getMonth();
+
+                      const isSelected =
+                        isSameDay(
+                          selectedDate,
+                          date
+                        );
+
+                      const isToday =
+                        isSameDay(today, date);
+
+                      return (
+                        <button
+                          key={formatDateValue(date)}
+                          type="button"
+                          onClick={() =>
+                            selectDate(date)
+                          }
+                          className={`
+                            flex
+                            h-8
+                            w-full
+                            min-w-0
+                            sm:h-9
+                            items-center
+                            justify-center
+                            rounded-lg
+                            text-xs
+                            font-semibold
+                            transition
+
+                            ${
+                              isSelected
+                                ? "bg-blue-600 text-white shadow-sm"
+                                : isCurrentMonth
+                                  ? isDark
+                                    ? "text-slate-200 hover:bg-slate-800"
+                                    : "text-slate-700 hover:bg-slate-100"
+                                  : isDark
+                                    ? "text-slate-700 hover:bg-slate-800/60"
+                                    : "text-slate-300 hover:bg-slate-50"
+                            }
+
+                            ${
+                              isToday &&
+                              !isSelected
+                                ? isDark
+                                  ? "ring-1 ring-blue-500"
+                                  : "ring-1 ring-blue-400"
+                                : ""
+                            }
+                          `}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div
+                    className={`
+                      mt-3
+                      flex
+                      items-center
+                      justify-between
+                      border-t
+                      pt-3
+
+                      ${
+                        isDark
+                          ? "border-slate-800"
+                          : "border-slate-100"
+                      }
+                    `}
+                  >
+                    <button
+                      type="button"
+                      onClick={clearDate}
+                      className={`
+                        rounded-lg
+                        px-3
+                        py-2
+                        text-xs
+                        font-bold
+                        transition
+
+                        ${
+                          isDark
+                            ? "text-slate-400 hover:bg-slate-800 hover:text-white"
+                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                        }
+                      `}
+                    >
+                      Clear
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={selectToday}
+                      className="
+                        rounded-lg
+                        px-3
+                        py-2
+                        text-xs
+                        font-bold
+                        text-blue-600
+                        transition
+                        hover:bg-blue-50
+                        dark:text-blue-400
+                        dark:hover:bg-blue-500/10
+                      "
+                    >
+                      Today
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {errors.date && (
                 <p
@@ -610,7 +1248,9 @@ function AddTaskModal({
                     text-red-500
                   "
                 >
-                  {errors.date.message}
+                  {
+                    errors.date.message
+                  }
                 </p>
               )}
 
@@ -624,13 +1264,20 @@ function AddTaskModal({
 
               <label
                 htmlFor="task-status"
-                className="
+                className={`
                   mb-2
                   block
                   text-sm
                   font-semibold
-                  text-slate-700
-                "
+
+                  transition-colors
+
+                  ${
+                    isDark
+                      ? "text-slate-200"
+                      : "text-slate-700"
+                  }
+                `}
               >
                 Status
 
@@ -639,35 +1286,161 @@ function AddTaskModal({
                 </span>
               </label>
 
-              <select
-                id="task-status"
-                {...register("status")}
-                className="
-                  w-full
-                  rounded-xl
-                  border
-                  border-slate-200
-                  bg-white
-                  px-4
-                  py-3
-                  text-sm
-                  outline-none
-                  transition
-                  focus:border-blue-500
-                  focus:ring-2
-                  focus:ring-blue-100
-                "
-              >
+              <div className="min-w-0">
+                <input
+                  type="hidden"
+                  {...register("status")}
+                />
 
-                <option value="pending">
-                  Pending
-                </option>
+                <button
+                  id="task-status"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={openDropdown === "status"}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setIsDatePickerOpen(false);
+                    setOpenDropdown((current) =>
+                      current === "status"
+                        ? null
+                        : "status"
+                    );
+                  }}
+                  className={`
+                    flex
+                    w-full
+                    items-center
+                    justify-between
+                    rounded-xl
+                    border
+                    px-4
+                    py-3
+                    text-left
+                    text-sm
+                    font-medium
+                    outline-none
+                    transition
+                    focus:ring-2
 
-                <option value="completed">
-                  Completed
-                </option>
+                    ${
+                      isDark
+                        ? `
+                          border-slate-700
+                          bg-slate-800
+                          text-white
+                          hover:border-slate-600
+                          focus:border-blue-500
+                          focus:ring-blue-900/50
+                        `
+                        : `
+                          border-slate-200
+                          bg-white
+                          text-slate-700
+                          hover:border-slate-300
+                          focus:border-blue-500
+                          focus:ring-blue-100
+                        `
+                    }
+                  `}
+                >
+                  <span>
+                    {statusValue === "completed"
+                      ? "Completed"
+                      : "Pending"}
+                  </span>
 
-              </select>
+                  <ChevronDown
+                    size={17}
+                    className={`
+                      shrink-0
+                      transition-transform
+                      duration-200
+                      ${
+                        openDropdown === "status"
+                          ? "rotate-180"
+                          : ""
+                      }
+                    `}
+                  />
+                </button>
+
+                {openDropdown === "status" && (
+                  <div
+                    role="listbox"
+                    onClick={(event) =>
+                      event.stopPropagation()
+                    }
+                    className={`
+                      mt-2
+                      w-full
+                      max-h-48
+                      overflow-y-auto
+                      overflow-x-hidden
+                      rounded-xl
+                      border
+                      p-1.5
+                      shadow-xl
+                      ${
+                        isDark
+                          ? "border-slate-700 bg-slate-900 shadow-black/40"
+                          : "border-slate-200 bg-white shadow-slate-300/40"
+                      }
+                    `}
+                  >
+                    {[
+                      ["pending", "Pending"],
+                      ["completed", "Completed"],
+                    ].map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        role="option"
+                        aria-selected={
+                          statusValue === value
+                        }
+                        onClick={() => {
+                          setValue(
+                            "status",
+                            value as TaskFormData["status"],
+                            {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            }
+                          );
+                          setOpenDropdown(null);
+                        }}
+                        className={`
+                          flex
+                          w-full
+                          items-center
+                          justify-between
+                          rounded-lg
+                          px-3
+                          py-2.5
+                          text-left
+                          text-sm
+                          font-semibold
+                          transition
+                          ${
+                            statusValue === value
+                              ? isDark
+                                ? "bg-blue-500/10 text-blue-400"
+                                : "bg-blue-50 text-blue-700"
+                              : isDark
+                                ? "text-slate-300 hover:bg-slate-800 hover:text-white"
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                          }
+                        `}
+                      >
+                        <span>{label}</span>
+                        {statusValue === value && (
+                          <Check size={16} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {errors.status && (
                 <p
@@ -677,7 +1450,9 @@ function AddTaskModal({
                     text-red-500
                   "
                 >
-                  {errors.status.message}
+                  {
+                    errors.status.message
+                  }
                 </p>
               )}
 
@@ -691,13 +1466,20 @@ function AddTaskModal({
 
               <label
                 htmlFor="task-priority"
-                className="
+                className={`
                   mb-2
                   block
                   text-sm
                   font-semibold
-                  text-slate-700
-                "
+
+                  transition-colors
+
+                  ${
+                    isDark
+                      ? "text-slate-200"
+                      : "text-slate-700"
+                  }
+                `}
               >
                 Priority
 
@@ -706,50 +1488,198 @@ function AddTaskModal({
                 </span>
               </label>
 
-              <select
-                id="task-priority"
-                {...register("priority")}
-                className={`
-                  w-full
-                  rounded-xl
-                  border
-                  bg-white
-                  px-4
-                  py-3
-                  text-sm
-                  outline-none
-                  transition
-                  focus:ring-2
+              <div className="min-w-0">
+                <input
+                  type="hidden"
+                  {...register("priority")}
+                />
 
-                  ${
-                    errors.priority
-                      ? `
-                        border-red-400
-                        focus:border-red-500
-                        focus:ring-red-100
-                      `
-                      : `
-                        border-slate-200
-                        focus:border-blue-500
-                        focus:ring-blue-100
-                      `
-                  }
-                `}
-              >
+                <button
+                  id="task-priority"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={openDropdown === "priority"}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setIsDatePickerOpen(false);
+                    setOpenDropdown((current) =>
+                      current === "priority"
+                        ? null
+                        : "priority"
+                    );
+                  }}
+                  className={`
+                    flex
+                    w-full
+                    items-center
+                    justify-between
+                    rounded-xl
+                    border
+                    px-4
+                    py-3
+                    text-left
+                    text-sm
+                    font-medium
+                    outline-none
+                    transition
+                    focus:ring-2
 
-                <option value="low">
-                  Low
-                </option>
+                    ${
+                      errors.priority
+                        ? `
+                          border-red-400
+                          focus:border-red-500
+                          focus:ring-red-100
+                        `
+                        : isDark
+                          ? `
+                            border-slate-700
+                            bg-slate-800
+                            text-white
+                            hover:border-slate-600
+                            focus:border-blue-500
+                            focus:ring-blue-900/50
+                          `
+                          : `
+                            border-slate-200
+                            bg-white
+                            text-slate-700
+                            hover:border-slate-300
+                            focus:border-blue-500
+                            focus:ring-blue-100
+                          `
+                    }
+                  `}
+                >
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={`
+                        h-2
+                        w-2
+                        rounded-full
+                        ${
+                          priorityValue === "high"
+                            ? "bg-red-500"
+                            : priorityValue === "medium"
+                              ? "bg-yellow-500"
+                              : "bg-green-500"
+                        }
+                      `}
+                    />
+                    {priorityValue.charAt(0).toUpperCase() +
+                      priorityValue.slice(1)}
+                  </span>
 
-                <option value="medium">
-                  Medium
-                </option>
+                  <ChevronDown
+                    size={17}
+                    className={`
+                      shrink-0
+                      transition-transform
+                      duration-200
+                      ${
+                        openDropdown === "priority"
+                          ? "rotate-180"
+                          : ""
+                      }
+                    `}
+                  />
+                </button>
 
-                <option value="high">
-                  High
-                </option>
+                {openDropdown === "priority" && (
+                  <div
+                    role="listbox"
+                    onClick={(event) =>
+                      event.stopPropagation()
+                    }
+                    className={`
+                      mt-2
+                      w-full
+                      max-h-48
+                      overflow-y-auto
+                      overflow-x-hidden
+                      rounded-xl
+                      border
+                      p-1.5
+                      shadow-xl
+                      ${
+                        isDark
+                          ? "border-slate-700 bg-slate-900 shadow-black/40"
+                          : "border-slate-200 bg-white shadow-slate-300/40"
+                      }
+                    `}
+                  >
+                    {[
+                      ["low", "Low"],
+                      ["medium", "Medium"],
+                      ["high", "High"],
+                    ].map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        role="option"
+                        aria-selected={
+                          priorityValue === value
+                        }
+                        onClick={() => {
+                          setValue(
+                            "priority",
+                            value as TaskFormData["priority"],
+                            {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            }
+                          );
+                          setOpenDropdown(null);
+                        }}
+                        className={`
+                          flex
+                          w-full
+                          items-center
+                          justify-between
+                          rounded-lg
+                          px-3
+                          py-2.5
+                          text-left
+                          text-sm
+                          font-semibold
+                          transition
+                          ${
+                            priorityValue === value
+                              ? isDark
+                                ? "bg-blue-500/10 text-blue-400"
+                                : "bg-blue-50 text-blue-700"
+                              : isDark
+                                ? "text-slate-300 hover:bg-slate-800 hover:text-white"
+                                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                          }
+                        `}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span
+                            className={`
+                              h-2
+                              w-2
+                              rounded-full
+                              ${
+                                value === "high"
+                                  ? "bg-red-500"
+                                  : value === "medium"
+                                    ? "bg-yellow-500"
+                                    : "bg-green-500"
+                              }
+                            `}
+                          />
+                          {label}
+                        </span>
 
-              </select>
+                        {priorityValue === value && (
+                          <Check size={16} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {errors.priority && (
                 <p
@@ -772,13 +1702,18 @@ function AddTaskModal({
             {/* ================================= */}
 
             <div
-              className="
+              className={`
                 flex
                 gap-3
                 border-t
-                border-slate-100
                 pt-5
-              "
+
+                ${
+                  isDark
+                    ? "border-slate-700"
+                    : "border-slate-100"
+                }
+              `}
             >
 
               {/* CANCEL */}
@@ -786,19 +1721,31 @@ function AddTaskModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="
+                className={`
                   flex-1
                   rounded-xl
                   border
-                  border-slate-200
                   px-4
                   py-3
                   text-sm
                   font-bold
-                  text-slate-700
                   transition
-                  hover:bg-slate-50
-                "
+
+                  ${
+                    isDark
+                      ? `
+                        border-slate-700
+                        text-slate-300
+                        hover:bg-slate-800
+                        hover:text-white
+                      `
+                      : `
+                        border-slate-200
+                        text-slate-700
+                        hover:bg-slate-50
+                      `
+                  }
+                `}
               >
                 Cancel
               </button>
@@ -821,7 +1768,7 @@ function AddTaskModal({
                   font-bold
                   text-white
                   shadow-md
-                  shadow-blue-200
+                  shadow-blue-200/30
                   transition
                   hover:bg-blue-700
                   active:scale-95

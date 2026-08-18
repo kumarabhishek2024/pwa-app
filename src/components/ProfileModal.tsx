@@ -1,4 +1,11 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import { createPortal } from "react-dom";
+import { useTheme } from "../context/useTheme";
+
 import {
   Camera,
   Save,
@@ -22,36 +29,81 @@ function ProfileModal({
   onClose,
   onSave,
 }: ProfileModalProps) {
-  // Profile se directly initial state
-  const [name, setName] = useState(profile.name);
-  const [image, setImage] = useState(profile.image);
+  const { theme } = useTheme();
+  const [name, setName] = useState(
+    profile.name
+  );
+
+  const [image, setImage] = useState(
+    profile.image
+  );
+
+  const isDark =
+    theme === "dark";
+
+  // ==========================================
+  // LOCK BACKGROUND SCROLL
+  // ==========================================
+
+  useEffect(() => {
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow =
+      "hidden";
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+    };
+  }, []);
+
+  // ==========================================
+  // IMAGE CHANGE
+  // ==========================================
 
   const handleImageChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = event.target.files?.[0];
+    const file =
+      event.target.files?.[0];
 
     if (!file) {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
+    if (
+      !file.type.startsWith(
+        "image/"
+      )
+    ) {
       return;
     }
 
-    const reader = new FileReader();
+    const reader =
+      new FileReader();
 
     reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setImage(reader.result);
+      if (
+        typeof reader.result ===
+        "string"
+      ) {
+        setImage(
+          reader.result
+        );
       }
     };
 
     reader.readAsDataURL(file);
   };
 
+  // ==========================================
+  // SAVE
+  // ==========================================
+
   const handleSave = () => {
-    const trimmedName = name.trim();
+    const trimmedName =
+      name.trim();
 
     if (!trimmedName) {
       return;
@@ -63,51 +115,99 @@ function ProfileModal({
     });
   };
 
-  return (
+  // ==========================================
+  // MODAL
+  // ==========================================
+
+  const modal = (
     <div
       className="
         fixed
         inset-0
-        z-9999
+        z-[99999]
         flex
-        items-center
+        min-h-screen
+        items-stretch
         justify-center
+        overflow-y-auto
+        overflow-x-hidden
+        overscroll-contain
         bg-black/50
-        p-4
+        p-3
+        sm:p-4
       "
       onClick={onClose}
     >
       <div
-        className="
+        className={`
+          my-auto
           w-full
           max-w-md
-          overflow-hidden
+          max-h-[calc(100dvh-24px)]
+          overflow-y-auto
+          overscroll-contain
           rounded-2xl
-          bg-white
           shadow-2xl
-        "
+          sm:max-h-[calc(100dvh-48px)]
+
+          ${
+            isDark
+              ? "bg-slate-900"
+              : "bg-white"
+          }
+        `}
         onClick={(event) =>
           event.stopPropagation()
         }
       >
-        {/* Header */}
+        {/* ================================= */}
+        {/* HEADER */}
+        {/* ================================= */}
+
         <div
-          className="
+          className={`
             flex
             items-center
             justify-between
             border-b
-            border-slate-100
             px-6
             py-5
-          "
+
+            ${
+              isDark
+                ? "border-slate-700"
+                : "border-slate-100"
+            }
+          `}
         >
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-900">
+            <h2
+              className={`
+                text-2xl
+                font-extrabold
+
+                ${
+                  isDark
+                    ? "text-white"
+                    : "text-slate-900"
+                }
+              `}
+            >
               Profile
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p
+              className={`
+                mt-1
+                text-sm
+
+                ${
+                  isDark
+                    ? "text-slate-400"
+                    : "text-slate-500"
+                }
+              `}
+            >
               Update your name and profile picture.
             </p>
           </div>
@@ -116,7 +216,7 @@ function ProfileModal({
             type="button"
             onClick={onClose}
             aria-label="Close profile"
-            className="
+            className={`
               flex
               h-9
               w-9
@@ -124,24 +224,39 @@ function ProfileModal({
               items-center
               justify-center
               rounded-lg
-              text-slate-400
               transition
-              hover:bg-slate-100
-              hover:text-slate-700
-            "
+
+              ${
+                isDark
+                  ? `
+                    text-slate-400
+                    hover:bg-slate-800
+                    hover:text-white
+                  `
+                  : `
+                    text-slate-400
+                    hover:bg-slate-100
+                    hover:text-slate-700
+                  `
+              }
+            `}
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Content */}
+        {/* ================================= */}
+        {/* CONTENT */}
+        {/* ================================= */}
+
         <div className="space-y-6 p-6">
 
-          {/* Profile Picture */}
+          {/* PROFILE IMAGE */}
+
           <div className="flex flex-col items-center">
 
             <div
-              className="
+              className={`
                 relative
                 flex
                 h-28
@@ -151,9 +266,13 @@ function ProfileModal({
                 overflow-hidden
                 rounded-full
                 border-4
-                border-blue-50
-                bg-slate-100
-              "
+
+                ${
+                  isDark
+                    ? "border-slate-700 bg-slate-800"
+                    : "border-blue-50 bg-slate-100"
+                }
+              `}
             >
               {image ? (
                 <img
@@ -168,11 +287,16 @@ function ProfileModal({
               ) : (
                 <UserRound
                   size={48}
-                  className="text-slate-400"
+                  className={
+                    isDark
+                      ? "text-slate-500"
+                      : "text-slate-400"
+                  }
                 />
               )}
 
-              {/* Camera */}
+              {/* CAMERA */}
+
               <label
                 htmlFor="profile-image"
                 className="
@@ -201,7 +325,9 @@ function ProfileModal({
                   id="profile-image"
                   type="file"
                   accept="image/*"
-                  onChange={handleImageChange}
+                  onChange={
+                    handleImageChange
+                  }
                   className="hidden"
                 />
               </label>
@@ -223,17 +349,23 @@ function ProfileModal({
 
           </div>
 
-          {/* Name */}
+          {/* NAME */}
+
           <div>
             <label
               htmlFor="profile-name"
-              className="
+              className={`
                 mb-2
                 block
                 text-sm
                 font-semibold
-                text-slate-700
-              "
+
+                ${
+                  isDark
+                    ? "text-slate-200"
+                    : "text-slate-700"
+                }
+              `}
             >
               Your Name
             </label>
@@ -243,53 +375,89 @@ function ProfileModal({
               type="text"
               value={name}
               onChange={(event) =>
-                setName(event.target.value)
+                setName(
+                  event.target.value
+                )
               }
               placeholder="Enter your name"
-              className="
+              className={`
                 w-full
                 rounded-xl
                 border
-                border-slate-200
                 px-4
                 py-3
                 text-sm
-                text-slate-700
                 outline-none
                 transition
+
                 focus:border-blue-500
                 focus:ring-2
-                focus:ring-blue-100
-              "
+
+                ${
+                  isDark
+                    ? `
+                      border-slate-700
+                      bg-slate-800
+                      text-white
+                      placeholder:text-slate-500
+                      focus:ring-blue-900/50
+                    `
+                    : `
+                      border-slate-200
+                      bg-white
+                      text-slate-700
+                      placeholder:text-slate-400
+                      focus:ring-blue-100
+                    `
+                }
+              `}
             />
           </div>
 
-          {/* Buttons */}
+          {/* BUTTONS */}
+
           <div
-            className="
+            className={`
               flex
               gap-3
               border-t
-              border-slate-100
               pt-5
-            "
+
+              ${
+                isDark
+                  ? "border-slate-700"
+                  : "border-slate-100"
+              }
+            `}
           >
             <button
               type="button"
               onClick={onClose}
-              className="
+              className={`
                 flex-1
                 rounded-xl
                 border
-                border-slate-200
                 px-4
                 py-3
                 text-sm
                 font-bold
-                text-slate-700
                 transition
-                hover:bg-slate-50
-              "
+
+                ${
+                  isDark
+                    ? `
+                      border-slate-700
+                      text-slate-300
+                      hover:bg-slate-800
+                      hover:text-white
+                    `
+                    : `
+                      border-slate-200
+                      text-slate-700
+                      hover:bg-slate-50
+                    `
+                }
+              `}
             >
               Cancel
             </button>
@@ -297,7 +465,9 @@ function ProfileModal({
             <button
               type="button"
               onClick={handleSave}
-              disabled={!name.trim()}
+              disabled={
+                !name.trim()
+              }
               className="
                 flex
                 flex-1
@@ -327,6 +497,15 @@ function ProfileModal({
         </div>
       </div>
     </div>
+  );
+
+  // ==========================================
+  // RENDER DIRECTLY INTO BODY
+  // ==========================================
+
+  return createPortal(
+    modal,
+    document.body
   );
 }
 

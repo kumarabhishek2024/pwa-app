@@ -1,8 +1,171 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
 
+/* ==========================================
+   GLOBAL TYPOGRAPHY
+========================================== */
+
+:root {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
+  min-width: 320px;
+  overflow-x: hidden;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+
+  background: #f8fafc;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+select {
+  letter-spacing: -0.005em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+}
+
+p {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ==========================================
+   TEXT SELECTION
+========================================== */
+
+::selection {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+/* ==========================================
+   MODAL SCROLLBAR
+========================================== */
+
+.modal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+.modal-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 999px;
+}
+
+.modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ==========================================
+   DARK MODE SCROLLBAR
+========================================== */
+
+.modal-scrollbar.dark-scrollbar {
+  scrollbar-color: #475569 transparent;
+}
+
+.modal-scrollbar.dark-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-scrollbar.dark-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-scrollbar.dark-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 999px;
+}
+
+.modal-scrollbar.dark-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ==========================================
+   MOBILE TYPOGRAPHY
+========================================== */
+
+@media (max-width: 639px) {
+  body {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    letter-spacing: -0.02em;
+  }
+}
+
+/* ==========================================
+   REDUCE MOTION WHEN REQUESTED
+========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
